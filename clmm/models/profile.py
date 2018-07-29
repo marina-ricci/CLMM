@@ -1,7 +1,27 @@
-'''General profile class that inherits from Model'''
+'''General profile class that inherits from Models'''
 
 class Profile1D(Model) :
-    ''' '''
+    """
+    Generalized superclass for 1D model profiles. It inherits from Models.
+
+    Attributes
+    -----------------------------------------------
+    z_lens: float
+        Redshift of the lensing object
+
+    mass_definition: string
+        Definition of mass, e.g. 'm200c'
+
+    cosmology: string
+        Label of cosmology, e.g. 'WMAP7'
+
+    func: callable
+        Functional form of the model, should be wrapped by the class
+
+    params: list
+        List of Parameter objects (default to None)
+    
+    """
     def __init__(self, z_lens, mass_definition, cosmology, func, params=None) :
         pass
     
