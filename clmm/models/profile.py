@@ -1,6 +1,7 @@
 '''General profile class that inherits from Models'''
 
 import Models
+from scipy import integrate
 
 class Profile1D(Models) :
     """
@@ -67,7 +68,7 @@ class Profile1D(Models) :
         """
 
         def integrand(r, R):
-            ret = 2.0 * r * self.density(r) / numpy.sqrt(r**2 - R**2)
+            ret = 2.0 * r * self.density_3d(r) / numpy.sqrt(r**2 - R**2)
             return ret
 
         r_use = r.tolist()
@@ -79,7 +80,7 @@ class Profile1D(Models) :
 
         return surfaceDensity
     
-    def mean_surface_density(self, r):
+    def mean_surface_density(self, r, return_sigma=False):
         """
         Mean enclosed surface density, :math:'\bar{\Sigma}'. It is a function of radius.
 
@@ -89,15 +90,37 @@ class Profile1D(Models) :
         -----------------------------------------------
         r: ndarray
             The radius in units of Mpc.
+        return_sigma: bool
+            A flag for whether or not to also return the surface density, since it's calculated anyways in this method
 
         Returns
         -----------------------------------------------
-        mean_sigma: ndarray
+        sigmaMean: ndarray
             :math:'\bar{\Sigma}', the mean enclosed surface density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'
             It has the same dimensions as r.
+        sigma
+            The surface density. Optional return, since surface density is calculated in the process
         
         """
-        pass
+        R = np.asarray(r)
+        add = np.arange(0.0001, R[0], 0.001)
+        r = []
+        r.extend(add)
+        r.extend(R)
+        r = np.asarray(r)
+            
+        Sigma = self.surface_density(r)
+        SigmaInt = integrate.cumtrapz(Sigma*r, r, initial = 0)
+        SigmaMean = 2.*SigmaInt/(r**2.)
+            
+        Sigma = Sigma[len(add):]
+        SigmaMean = SigmaMean[len(add):]
+
+        if return_sigma:
+            return (sigmaMean, sigma)
+        if not return_sigma:
+            return sigmaMean
+
     
     def delta_sigma(self, r):
         """
@@ -117,7 +140,9 @@ class Profile1D(Models) :
             It has the same dimensions as r.
         
         """
-        pass
+        sigma_mean, sigma = self.mean_surface_density(r, return_sigma=True)
+        delta_sigma = sigma_mean - sigma
+        return delta_sigma
     
     def convergence(self, r, z_source):
         """
