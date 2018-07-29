@@ -1,6 +1,8 @@
 '''General profile class that inherits from Models'''
 
-class Profile1D(Model) :
+import Models
+
+class Profile1D(Models) :
     """
     Generalized superclass for 1D model profiles. It inherits from Models.
 
@@ -63,7 +65,19 @@ class Profile1D(Model) :
             It has the same dimensions as r.
         
         """
-        pass
+
+        def integrand(r, R):
+            ret = 2.0 * r * self.density(r) / numpy.sqrt(r**2 - R**2)
+            return ret
+
+        r_use = r.tolist()
+        surfaceDensity = (0.0 * r).tolist()
+        for i in range(len(r_use)): 
+            ReturnResult = scipy.integrate.quad(integrand, r_use[i] + 0.0000001, self.rmax, args = r_use[i], epsrel = 1E-6, limit = 100000)   
+            surfaceDensity[i] = ReturnResult[0]
+        surfaceDensity = np.array(surfaceDensity)
+
+        return surfaceDensity
     
     def mean_surface_density(self, r):
         """
