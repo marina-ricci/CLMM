@@ -9,11 +9,9 @@ Created on Thu Nov 19 15:05:13 2015
 import colossus.cosmology.cosmology as Cosmology
 from colossus.utils import constants
 import colossus.halo.profile_dk14 as profile_dk14
-#import HaloDensityProfile
 import colossus.halo as Halo
 import colossus.halo.concentration as hc
-#import HaloConcentration as hc
-#import cosmolopy.distance as cd
+import cosmolopy.distance as cd
 
 
 import numpy as np
@@ -343,7 +341,7 @@ class nfwProfile(Profile1D):
 '''
 class nfwBMOProfile(profile):
     
-    def r(self, parameters, zL, n, mdef, chooseCosmology, Tau = None, cM_relation = None, esp = None):
+    def __init__(self, parameters, zL, n, mdef, chooseCosmology, Tau = None, cM_relation = None, esp = None):
         profile.__init__(self, zL, mdef, chooseCosmology)
         
         cosmo = Cosmology.setCosmology(chooseCosmology)
@@ -515,7 +513,7 @@ class dkProfile(Profile1D):
             self.part = 'both'
         #[rs] = Mpc/h
         self.r_mdef = Halo.mass_so.M_to_R(self.M_mdef*self.cosmo.h, self.zL, self.mdef)/1E3/self.cosmo.h #Mpc
-        self.rs = self.r_mdef/self.c #Mpc/h
+        self.rs = self.r_mdef/self.c #Mpc
         self.Delta = int(mdef[:-1])
         #[rho_mdef] = M_dot Mpc^3 from M_{\odot}h^2/kpc^3
         self.rho_mdef = (Halo.mass_so.densityThreshold(self.zL, self.mdef) * 1E9 *(self.cosmo.h)**2.)/self.Delta
