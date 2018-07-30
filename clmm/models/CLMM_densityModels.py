@@ -363,29 +363,3 @@ class dkProfile(Profile1D):
         SigmaDiemer = SigmaDiemer * self.cosmo.h
         return SigmaDiemer #[Sigma] = M_dot/Mpc^2
     
-    def dkDeltaSigma(self,r):
-        #input [r] = Mpc
-        '''
-        #[R] = kpc/h from Mpc/h for Diemer input
-        r = R*1E3
-        self.dk14Prof.rmax = r[-1]*self.rmaxMult
-        #[surfaceDensity] = M_dot h/Mpc^2 from M_{\odot} h/kpc^2
-        SigmaDiemer = self.dk14Prof.surfaceDensity(r) * 1E6
-        #[Sigma] = M_dot / Mpc^2 from `M_{\odot} h/Mpc^2`
-        SigmaDiemer = SigmaDiemer * self.cosmo.h
-        '''
-        
-        ########## Doesn't work!!!!!
-        #[r] = kpc/h from Mpc (Diemer input)
-        R = r*1E3*self.cosmo.h
-        #self.dk14Prof.rmax = R[-1]*self.rmaxMult
-        dSig = self.dk14Prof.deltaSigma(R)
-        #output :math:`M_{\odot} h/{\\rm kpc}^2`
-        ########## up to here
-        
-        
-        return dSig * self.cosmo.h #[Sigma] = M_dot/Mpc^2 from M_dot h^2 / Mpc^2
-    
-    
-
-
