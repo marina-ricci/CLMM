@@ -148,12 +148,12 @@ class Profile1D(Models) :
         Abstract function which must be overwritten by child classes.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
 
         Returns
-        -----------------------------------------------
+        -------
         delta_sigma: ndarray
             :math:'\Delta\Sigma = \bar{\Sigma} - \Sigma' in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'
             It has the same dimensions as r.
@@ -168,14 +168,14 @@ class Profile1D(Models) :
         Convergence, or dimensionless surface mass density, :math:'\kappa=\Sigma/\Sigma_{crit}'. It is a function of radius.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
         z_source: float
             Mean effective redshift of the background galaxies.
 
         Returns
-        -----------------------------------------------
+        -------
         kappa: ndarray
             :math:'\kappa', the convergence, which is unitless. It has the same dimensions of r.
         
@@ -191,14 +191,14 @@ class Profile1D(Models) :
         Mean enclosed convergence, :math:'\bar{\kappa}=\bar{\Sigma}/\Sigma_{crit}'. It is a function of radius.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
         z_source: float
             Mean effective redshift of the background galaxies.
 
         Returns
-        -----------------------------------------------
+        -------
         mean_kappa: ndarray
             :math:'\bar{\kappa}', the mean convergence enclosed by r, which is unitless. It has the same dimensions as r.
         
@@ -212,14 +212,14 @@ class Profile1D(Models) :
         Tangential shear, :math:'\gamma_{t}=\Delta\Sigma / \Sigma_{crit}'. It is a function of radius.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
         z_source: float
             Mean effective redshift of the background galaxies.
 
         Returns
-        -----------------------------------------------
+        -------
         gamma: ndarray
             :math:'\gamma_t', the tangential shear, which is unitless. It has the same dimensions as r.
         
@@ -233,14 +233,14 @@ class Profile1D(Models) :
         Tangential reduced shear, :math:'g_t'. It is a function of radius.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
         z_source: float
             Mean effective redshift of the background galaxies.
 
         Returns
-        -----------------------------------------------
+        -------
         redg: ndarray
             :math:'g_t', the tangential reduced shear, which is unitless. It has the same dimensions as r.
         
