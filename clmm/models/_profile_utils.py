@@ -62,13 +62,13 @@ class sigma_crit
         
         return constants.c.to('Mpc/s') * constants.c.to('Mpc/s') / \
             (4. * np.pi *  constants.G.to('Mpc3 / (Msun  s2)') * \
-             self.cosmology.Dl * self.beta_function(z_source) )
+             self.cosmo.angular_diameter_distance(self.z_lens) * self.beta_function(z_source) )
 
 
 
     def _beta_function(self, z_source) :
         
-        return self.cosmo.angular_diameter_distance( self.z_lens ) / self.cosmo.angular_diameter_distance( self.z_source )
+        return self.angular_diameter_distnce_two_objects(z_lens, z_source, cosmology) / self.cosmo.angular_diameter_distance( self.z_source )
 
         pass
 
@@ -84,7 +84,12 @@ def _angular_diameter_distance_two_objects(z_lens, z_source, cosmology) :
     Hogg+00 Eqn (19)
 
     """
-    pass
+    hubble_radius= constants.c.to('Mpc/s')/cosmo.H(0).to.('/s')                      
+    ang_diameter_lens = self.cosmo.angular_diameter_distance(self.z_lens)
+    ang_diameter_source = self.cosmo.angular_diameter_distance(self.z_source)
+    return (ang_diameter_source*np.sqrt(1.+ ang_diameter_lens**2/hubble_radius**2) \
+            - ang_diameter_lens*np.sqrt(1.+ ang_diameter_source**2/hubble_radius**2))/(1.+z_source)
+    
 
 
 def _get_cosmology( cosmology ) :
