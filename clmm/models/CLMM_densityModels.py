@@ -352,7 +352,22 @@ class dkProfile(Profile1D):
         rho = rho * (self.cosmo.h**2.)
         return rho 
     
-    def dkSigma(self,r):
+    def surface_density(self,R):
+        """
+        DK14 projected surface density profile, :math:'\Sigma'. It is a function of radius. See Diemer & Kravtsov (2014)
+
+        Parameters
+        -----------------------------------------------
+        r: ndarray
+            The radius in units of Mpc.
+
+        Returns
+        -----------------------------------------------
+        sigma: ndarray
+            :math:'\Sigma', the surface density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'. 
+            It has the same dimensions as r.
+        
+        """
         #input [R] = Mpc
         #[R] = kpc/h from Mpc for Diemer input
         R = r*1E3*self.cosmo.h
@@ -363,10 +378,10 @@ class dkProfile(Profile1D):
         SigmaDiemer = SigmaDiemer * self.cosmo.h
         return SigmaDiemer #[Sigma] = M_dot/Mpc^2
     
-    def dkDeltaSigma(self,r):
+    def delta_sigma(self,r):
         #input [r] = Mpc
         '''
-        #[R] = kpc/h from Mpc/h for Diemer input
+        #[R] = kpc from Mpc for Diemer input
         r = R*1E3
         self.dk14Prof.rmax = r[-1]*self.rmaxMult
         #[surfaceDensity] = M_dot h/Mpc^2 from M_{\odot} h/kpc^2
@@ -377,6 +392,24 @@ class dkProfile(Profile1D):
         
         ########## Doesn't work!!!!!
         #[r] = kpc/h from Mpc (Diemer input)
+
+        """
+        Difference in mean_surface density and surface density, :math:'\Delta\Sigma = \bar{\Sigma} - \Sigma'. It is a function of radius.
+
+        See Diemer & Kravtsov (2014)
+
+        Parameters
+        -----------------------------------------------
+        r: ndarray
+            The radius in units of Mpc.
+
+        Returns
+        -----------------------------------------------
+        delta_sigma: ndarray
+            :math:'\Delta\Sigma = \bar{\Sigma} - \Sigma' in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'
+            It has the same dimensions as r.
+        
+        """
         R = r*1E3*self.cosmo.h
         #self.dk14Prof.rmax = R[-1]*self.rmaxMult
         dSig = self.dk14Prof.deltaSigma(R)

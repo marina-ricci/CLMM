@@ -3,6 +3,8 @@
 from models.models import Model
 import scipy
 from scipy import integrate
+
+RELATIVE_ERROR = 1E-6
 from _profile_utils import sigma_crit
 import numpy as np
 
@@ -107,7 +109,7 @@ class Profile1D(Model) :
             It has the same dimensions as r. 
 
         """
-        pass
+        return self.func(r, self.params)
     
     def surface_density(self, r):
         """
@@ -135,7 +137,7 @@ class Profile1D(Model) :
         r_use = r.tolist()
         surface_density = (0.0 * r).tolist()
         for i in range(len(r_use)): 
-            ReturnResult = integrate.quad(integrand, r_use[i] + 0.0000001, self.rmax, args = r_use[i], epsrel = 1E-6, limit = 100000)   
+            ReturnResult = integrate.quad(integrand, r_use[i] + 0.0000001, 1000, args = r_use[i], epsrel = RELATIVE_ERROR, limit = 100000)   
             surface_density[i] = ReturnResult[0]
         surface_density = np.array(surface_density)
 
