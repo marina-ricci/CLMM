@@ -8,7 +8,7 @@ class Profile1D(models) :
     Generalized superclass for 1D model profiles. It inherits from Models.
 
     Attributes
-    -----------------------------------------------
+    ----------
     z_lens: float
         Redshift of the lensing object
 
@@ -26,7 +26,26 @@ class Profile1D(models) :
     
     """
     def __init__(self, z_lens, mass_definition, cosmology, func, params=None) :
-        pass
+        
+        if isinstance(z_lens, float) :
+            self.z_lens = zlens
+        else :
+            raise TypeError('z_lens should be a float')
+
+        if isinstance(mass_definition, str) :
+            self.mass_definition = mass_definition
+        else :
+            # Need to implement test of valid mass_definitions
+            raise TypeError('mass_definition should be a string')
+
+        if isinstance(cosmology, string) :
+            self.cosmology = cosmology
+        else :
+            raise TypeError('cosmology should be a string')
+
+        
+        # Need to implement r as the independent_var for all Profile1D models
+        Models.__init__(self, func, params=params)
     
     def density_3d(self,r):
         """
@@ -35,12 +54,12 @@ class Profile1D(models) :
         Abstract function which must be overwritten by child classes.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
 
         Returns
-        -----------------------------------------------
+        -------
         rho: ndarray
             :math:'\rho', the 3D density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^3'.
             It has the same dimensions as r. 
@@ -55,12 +74,12 @@ class Profile1D(models) :
         Abstract function which must be overwritten by child classes.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
 
         Returns
-        -----------------------------------------------
+        -------
         sigma: ndarray
             :math:'\Sigma', the surface density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'. 
             It has the same dimensions as r.
@@ -72,13 +91,13 @@ class Profile1D(models) :
             return ret
 
         r_use = r.tolist()
-        surfaceDensity = (0.0 * r).tolist()
+        surface_density = (0.0 * r).tolist()
         for i in range(len(r_use)): 
             ReturnResult = scipy.integrate.quad(integrand, r_use[i] + 0.0000001, self.rmax, args = r_use[i], epsrel = 1E-6, limit = 100000)   
-            surfaceDensity[i] = ReturnResult[0]
-        surfaceDensity = np.array(surfaceDensity)
+            surface_density[i] = ReturnResult[0]
+        surface_density = np.array(surface_density)
 
-        return surfaceDensity
+        return surface_density
     
     def mean_surface_density(self, r, return_sigma=False):
         """
@@ -87,14 +106,14 @@ class Profile1D(models) :
         Abstract function which must be overwritten by child classes.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
         return_sigma: bool
             A flag for whether or not to also return the surface density, since it's calculated anyways in this method
 
         Returns
-        -----------------------------------------------
+        -------
         sigmaMean: ndarray
             :math:'\bar{\Sigma}', the mean enclosed surface density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'
             It has the same dimensions as r.
@@ -109,17 +128,17 @@ class Profile1D(models) :
         r.extend(R)
         r = np.asarray(r)
             
-        Sigma = self.surface_density(r)
-        SigmaInt = integrate.cumtrapz(Sigma*r, r, initial = 0)
-        SigmaMean = 2.*SigmaInt/(r**2.)
+        sigma = self.surface_density(r)
+        sigma_int = integrate.cumtrapz(sigma*r, r, initial = 0)
+        sigma_mean = 2.*sigma_int/(r**2.)
             
-        Sigma = Sigma[len(add):]
-        SigmaMean = SigmaMean[len(add):]
+        sigma = sigma[len(add):]
+        sigma_mean = sigma_mean[len(add):]
 
         if return_sigma:
-            return (SigmaMean, Sigma)
+            return (sigma_mean, sigma)
         else:
-            return SigmaMean
+            return sigma_mean
 
     
     def delta_sigma(self, r):
@@ -129,12 +148,12 @@ class Profile1D(models) :
         Abstract function which must be overwritten by child classes.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
 
         Returns
-        -----------------------------------------------
+        -------
         delta_sigma: ndarray
             :math:'\Delta\Sigma = \bar{\Sigma} - \Sigma' in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'
             It has the same dimensions as r.
@@ -149,14 +168,14 @@ class Profile1D(models) :
         Convergence, or dimensionless surface mass density, :math:'\kappa=\Sigma/\Sigma_{crit}'. It is a function of radius.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
         z_source: float
             Mean effective redshift of the background galaxies.
 
         Returns
-        -----------------------------------------------
+        -------
         kappa: ndarray
             :math:'\kappa', the convergence, which is unitless. It has the same dimensions of r.
         
@@ -172,14 +191,14 @@ class Profile1D(models) :
         Mean enclosed convergence, :math:'\bar{\kappa}=\bar{\Sigma}/\Sigma_{crit}'. It is a function of radius.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
         z_source: float
             Mean effective redshift of the background galaxies.
 
         Returns
-        -----------------------------------------------
+        -------
         mean_kappa: ndarray
             :math:'\bar{\kappa}', the mean convergence enclosed by r, which is unitless. It has the same dimensions as r.
         
@@ -193,14 +212,14 @@ class Profile1D(models) :
         Tangential shear, :math:'\gamma_{t}=\Delta\Sigma / \Sigma_{crit}'. It is a function of radius.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
         z_source: float
             Mean effective redshift of the background galaxies.
 
         Returns
-        -----------------------------------------------
+        -------
         gamma: ndarray
             :math:'\gamma_t', the tangential shear, which is unitless. It has the same dimensions as r.
         
@@ -214,14 +233,14 @@ class Profile1D(models) :
         Tangential reduced shear, :math:'g_t'. It is a function of radius.
 
         Parameters
-        -----------------------------------------------
+        ----------
         r: ndarray
             The radius in units of Mpc.
         z_source: float
             Mean effective redshift of the background galaxies.
 
         Returns
-        -----------------------------------------------
+        -------
         redg: ndarray
             :math:'g_t', the tangential reduced shear, which is unitless. It has the same dimensions as r.
         
