@@ -59,7 +59,10 @@ class sigma_crit
         self.cosmology = _get_cosmology( cosmology ) 
 
     def calculate_sigma_crit(self) :
-        
+        """
+        returns sigma crit in units of Msun / Mpc^2
+
+        """
         return constants.c.to('Mpc/s') * constants.c.to('Mpc/s') / \
             (4. * np.pi *  constants.G.to('Mpc3 / (Msun  s2)') * \
              self.cosmo.angular_diameter_distance(self.z_lens) * self.beta_function(z_source) )
