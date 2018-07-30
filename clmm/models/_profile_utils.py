@@ -108,10 +108,10 @@ class sigma_crit
         """
 
         if np.iterable(z_source) and all(isinstance(z_s, float) for z_s in z_source) :
-            return np.mean(self.beta_function(z_source))
+            return np.mean(self.beta_function(z_source*z_source))
 
         elif isinstance(z_source, float) :
-            return self.beta_function(z_source)
+            return self.beta_function(z_source*z_source)
 
         else :
             raise TypeError("z_source must be float or array-like of floats ")
