@@ -245,8 +245,10 @@ class Profile1D(Model) :
             :math:'\bar{\kappa}', the mean convergence enclosed by r, which is unitless. It has the same dimensions as r.
         
         """
+
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
         mean_sigma = self.mean_surface_density(r)
-        mean_kappa = mean_sigma/sigmaC
+        mean_kappa = mean_sigma/sigma_crit
         return mean_kappa
     
     def shear(self, r, z_source):
@@ -266,8 +268,10 @@ class Profile1D(Model) :
             :math:'\gamma_t', the tangential shear, which is unitless. It has the same dimensions as r.
         
         """
+
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
         delta_sigma = self.delta_sigma(r)
-        gamma = delta_sigma/sigmaC
+        gamma = delta_sigma/sigma_crit
         return gamma
     
     def reduced_shear(self, r, z_source):
@@ -289,6 +293,7 @@ class Profile1D(Model) :
         """
         mean_sigma, sigma = self.mean_surface_density(r, return_sigma=True)
 
-        redg = (mean_sigma-sigma)/(sigmaC-sigma)
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
+        redg = (mean_sigma-sigma)/(sigma_crit-sigma)
         return redg    
     
