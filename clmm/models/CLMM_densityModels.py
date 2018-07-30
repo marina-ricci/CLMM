@@ -352,7 +352,22 @@ class dkProfile(Profile1D):
         rho = rho * (self.cosmo.h**2.)
         return rho 
     
-    def dkSigma(self,r):
+    def surface_density(self,R):
+        """
+        DK14 projected surface density profile, :math:'\Sigma'. It is a function of radius. See Diemer & Kravtsov (2014)
+
+        Parameters
+        -----------------------------------------------
+        r: ndarray
+            The radius in units of Mpc.
+
+        Returns
+        -----------------------------------------------
+        sigma: ndarray
+            :math:'\Sigma', the surface density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'. 
+            It has the same dimensions as r.
+        
+        """
         #input [R] = Mpc
         #[R] = kpc/h from Mpc for Diemer input
         R = r*1E3*self.cosmo.h

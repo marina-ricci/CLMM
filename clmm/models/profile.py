@@ -3,6 +3,8 @@
 from models.models import Model
 import scipy
 from scipy import integrate
+
+RELATIVE_ERROR = 1E-6
 from _profile_utils import sigma_crit
 import numpy as np
 
@@ -107,7 +109,7 @@ class Profile1D(Model) :
             It has the same dimensions as r. 
 
         """
-        pass
+        return self.func(r, self.params)
     
     def surface_density(self, r):
         """
@@ -135,7 +137,7 @@ class Profile1D(Model) :
         r_use = r.tolist()
         surface_density = (0.0 * r).tolist()
         for i in range(len(r_use)): 
-            ReturnResult = integrate.quad(integrand, r_use[i] + 0.0000001, self.rmax, args = r_use[i], epsrel = 1E-6, limit = 100000)   
+            ReturnResult = integrate.quad(integrand, r_use[i] + 0.0000001, 1000, args = r_use[i], epsrel = RELATIVE_ERROR, limit = 100000)   
             surface_density[i] = ReturnResult[0]
         surface_density = np.array(surface_density)
 
@@ -223,7 +225,7 @@ class Profile1D(Model) :
         
         """
 
-        sigma_crit = sigma_crit(self.z_lens, z_source, self.mass_definition, self.cosmology).calculate_sigma_crit()
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
         sigma = self.surface_density(r)
         kappa = sigma/sigma_crit
         return kappa
@@ -245,8 +247,10 @@ class Profile1D(Model) :
             :math:'\bar{\kappa}', the mean convergence enclosed by r, which is unitless. It has the same dimensions as r.
         
         """
+
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
         mean_sigma = self.mean_surface_density(r)
-        mean_kappa = mean_sigma/sigmaC
+        mean_kappa = mean_sigma/sigma_crit
         return mean_kappa
     
     def shear(self, r, z_source):
@@ -266,8 +270,10 @@ class Profile1D(Model) :
             :math:'\gamma_t', the tangential shear, which is unitless. It has the same dimensions as r.
         
         """
+
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
         delta_sigma = self.delta_sigma(r)
-        gamma = delta_sigma/sigmaC
+        gamma = delta_sigma/sigma_crit
         return gamma
     
     def reduced_shear(self, r, z_source):
@@ -289,6 +295,7 @@ class Profile1D(Model) :
         """
         mean_sigma, sigma = self.mean_surface_density(r, return_sigma=True)
 
-        redg = (mean_sigma-sigma)/(sigmaC-sigma)
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
+        redg = (mean_sigma-sigma)/(sigma_crit-sigma)
         return redg    
     

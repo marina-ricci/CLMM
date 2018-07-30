@@ -5,7 +5,7 @@ from astropy import constants
 import numpy as np
 
 
-class sigma_crit():
+class sigma_crit() :
     """
     This calculates a sigma crit for a given cosmology, mass definition, source and lens redshifts.
     
@@ -15,10 +15,8 @@ class sigma_crit():
     z_lens : float
         Redshift of the lensing object
 
-    z_source : 
-
-    mass_definition : str
-        Definition of mass, e.g. 'm200c'
+    z_source : float
+        Redshift of the source
  
     cosmology : str
         Label of cosmology
@@ -26,7 +24,7 @@ class sigma_crit():
     """
     
 
-    def __init__(self, z_lens, z_source, mass_definition, cosmology) :
+    def __init__(self, z_lens, z_source, cosmology) :
 
         """ 
         Parameters
@@ -36,9 +34,6 @@ class sigma_crit():
             Redshift of the lensing object
 
         z_source : 
-
-        mass_definition : str
-            Definition of mass, e.g. 'm200c'
 
         cosmology : str
             Label of cosmology
@@ -56,6 +51,9 @@ class sigma_crit():
 
 
         """ 
+
+        self.z_lens = z_lens
+        self.z_source = z_source
         self.cosmology = _get_cosmology( cosmology ) 
 
     def calculate_sigma_crit(self) :
@@ -69,13 +67,11 @@ class sigma_crit():
 
 
 
-    def beta_function(self, z_source) :
+    def beta_function(self) :
         
-        return self.angular_diameter_distnce_two_objects(z_lens, z_source, cosmology) / self.cosmology.angular_diameter_distance( self.z_source )
+        return self.angular_diameter_distnce_two_objects(self.z_lens, self.z_source, cosmology) / self.cosmology.angular_diameter_distance( self.z_source )
 
-        pass
-
-    def beta_discrete_mean(self, z_source ) :
+    def beta_discrete_mean(self) :
         """
         Arithmetic mean for discrete lensing efficiency <beta> for given source redshift or redshifts
         
@@ -87,18 +83,18 @@ class sigma_crit():
         
         """
 
-        if np.iterable(z_source) and all(isinstance(z_s, float) for z_s in z_source) :
-            return np.mean(self.beta_function(z_source))
+        if np.iterable(self.z_source) and all(isinstance(z_s, float) for z_s in self.z_source) :
+            return np.mean(self.beta_function(self.z_source))
 
-        elif isinstance(z_source, float) :
-            return self.beta_function(z_source)
+        elif isinstance(self.z_source, float) :
+            return self.beta_function(self.z_source)
 
         else :
             raise TypeError("z_source must be float or array-like of floats ")
             
 
 
-    def beta_square_discrete_mean( z_source ) :
+    def beta_square_discrete_mean(self) :
         """
         Mean of the square of the discrete lensing efficiency <beta^2>
         
@@ -110,11 +106,11 @@ class sigma_crit():
 
         """
 
-        if np.iterable(z_source) and all(isinstance(z_s, float) for z_s in z_source) :
-            return np.mean(self.beta_function(z_source*z_source))
+        if np.iterable(z_source) and all(isinstance(z_s, float) for z_s in self.z_source) :
+            return np.mean(self.beta_function(self.z_source*self.z_source))
 
-        elif isinstance(z_source, float) :
-            return self.beta_function(z_source*z_source)
+        elif isinstance(self.z_source, float) :
+            return self.beta_function(self.z_source*self.z_source)
 
         else :
             raise TypeError("z_source must be float or array-like of floats ")

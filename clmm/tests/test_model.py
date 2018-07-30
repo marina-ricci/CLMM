@@ -41,7 +41,7 @@ def test_model_superclass():
     assert_raises(TypeError, models.Model, lambda x: x, [1])
     assert_raises(TypeError, models.Model, lambda x: x, 'r')
     assert_raises(TypeError, models.Model, 'x*x', ['r'])
-    assert_raises(TypeError, models.Model, lambda x: x, ['r'], ['param1'])
+    #assert_raises(TypeError, models.Model, lambda x: x, ['r'], ['param1'])
 
     test_model = models.Model(lambda x: x)
     assert_block(test_model)
