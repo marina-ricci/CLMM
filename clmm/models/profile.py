@@ -1,9 +1,9 @@
 '''General profile class that inherits from Models'''
 
-import Models
+import models
 from scipy import integrate
 
-class Profile1D(Models) :
+class Profile1D(models) :
     """
     Generalized superclass for 1D model profiles. It inherits from Models.
 
@@ -117,9 +117,9 @@ class Profile1D(Models) :
         SigmaMean = SigmaMean[len(add):]
 
         if return_sigma:
-            return (sigmaMean, sigma)
+            return (SigmaMean, Sigma)
         else:
-            return sigmaMean
+            return SigmaMean
 
     
     def delta_sigma(self, r):
