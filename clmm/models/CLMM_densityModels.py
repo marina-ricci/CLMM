@@ -206,7 +206,8 @@ class profile(object):
             SigmaMean = SigmaMean[len(add):]
             dSig = SigmaMean - Sigma
             '''
-            dSig = self.dkDeltaSigma(r)
+            #dSig = self.dkDeltaSigma(r)
+            dSig = self.SigmaMean(r)-self.Sigma(r)
         if self.profile == 'nfwBMO':
             dSig = self.bmoSigmaMean(r) - self.bmoSigma(r)
         return dSig
@@ -217,7 +218,7 @@ class profile(object):
                                   NFW
 ############################################################################
 '''
-class nfwProfile(profile):
+class nfwProfile(Profile1D):
     ##### We're going to swap out ``profile'' with ``Profile1D''
     def __init__(self, parameters, zL, mdef, chooseCosmology, esp = None):
         profile.__init__(self, zL, mdef, chooseCosmology)
@@ -231,8 +232,10 @@ class nfwProfile(profile):
         #input [M] = M_dot/h
         self.r_mdef = Halo.mass_so.M_to_R(self.M_mdef*self.cosmo.h, self.zL, self.mdef)/1E3/self.cosmo.h #Mpc from kpc/h
         self.Delta = int(mdef[:-1])
+
         #[rho_mdef] = M_dot/Mpc^3 from M_{\odot}h^2/kpc^3
         self.rho_mdef = (Halo.mass_so.densityThreshold(self.zL, self.mdef) * ((1E3)**3.) *(self.cosmo.h)**2.)/self.Delta
+
         self.rs = self.r_mdef/self.c #Mpc
         self.profile = 'nfw'
         if esp == None:
@@ -247,56 +250,21 @@ class nfwProfile(profile):
     ############################################################################
     '''
     def charOverdensity(self):
-        """
-        Characteristic overdensity, :math:'\delta_c=\rho_0/\rho_c'.
-
-        Returns
-        -----------------------------------------------
-        delta_c: float
-            The characteristic overdensity, :math:'\delta_c'
-
-
-        """
-        Delta = int(self.mdef[:-1])
-        delta_c = (Delta/3.)*(self.c**3.)/(np.log(1. + self.c) - self.c/(1. + self.c))
-        return delta_c #unitless
+        sigma_c = (self.Delta/3.)*(self.c**3.)/(np.log(1. + self.c) - self.c/(1. + self.c))
+        return sigma_c #unitless
     
-    def density_3d(self, r):
-        """
-        NFW 3D volume density profile, :math:'\rho = \frac{\rho_0}{(r/rs)(1+r/rs)^2}'. It is a function of radius.
-
-        Parameters
-        -----------------------------------------------
-        r: ndarray
-            The radius in units of Mpc.
-
-        Returns
-        -----------------------------------------------
-        rho: ndarray
-            :math:'\rho', the 3D density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^3'.
-            It has the same dimensions as r. 
-
-        """
+    def nfwrho(self, R):
+        #R in Mpc
+        #[sigma_c] = unitless
+        #[rho_mdef] = M_dot / Mpc^3
         const =  self.rho_mdef * self.charOverdensity() 
-        rhoForm = 1./( (r/self.rs) * (1. + r/self.rs)**2.)
+        rhoForm = 1./( (R/self.rs) * (1. + R/self.rs)**2.)
         return (const * rhoForm)
         
-    def surface_density(self, r):
-        """
-        NFW projected surface density profile, :math:'\Sigma'. It is a function of radius. See Wright & Brainerd (2000) for equations.
-
-        Parameters
-        -----------------------------------------------
-        r: ndarray
-            The radius in units of Mpc.
-
-        Returns
-        -----------------------------------------------
-        sigma: ndarray
-            :math:'\Sigma', the surface density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'. 
-            It has the same dimensions as r.
+    def nfwSigma(self, r):
+        #[r] = Mpc
         
-        """       
+        #[rs] = Mpc        
         rs = self.rs
         expSig = np.empty(len(r))
         for i in range(len(r)):
@@ -314,26 +282,8 @@ class nfwProfile(profile):
         #[Sigma] = M_dot / Mpc^2 
         return (expSig * const)
     
-    def mean_surface_density(self, r, return_sigma=False):
-        """
-        NFW mean enclosed surface density, :math:'\bar{\Sigma}'. It is a function of radius. See Wright & Brainerd (2000) for equations.
-
-        Parameters
-        -----------------------------------------------
-        r: ndarray
-            The radius in units of Mpc.
-        return_sigma: bool
-            A flag for whether or not to also return the surface density, since it's calculated anyways in this method
-
-        Returns
-        -----------------------------------------------
-        sigmaMean: ndarray
-            :math:'\bar{\Sigma}', the mean enclosed surface density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'
-            It has the same dimensions as r.
-        sigma
-            The surface density. Optional return, since surface density is calculated in the process
-        
-        """
+    def nfwSigmaMean(self, r):
+        #[r] = Mpc
         x = r/self.rs
         const = 4.*self.rs*self.charOverdensity()*self.rho_mdef
         if type(x) is np.ndarray:
@@ -354,23 +304,7 @@ class nfwProfile(profile):
         
         
     
-    def delta_sigma(self, r):
-        """
-        Difference in mean_surface density and surface density, :math:'\Delta\Sigma = \bar{\Sigma} - \Sigma'. It is a function of radius.
-        See Wright & Brainerd (2000) for equations.
-
-        Parameters
-        -----------------------------------------------
-        r: ndarray
-            The radius in units of Mpc.
-
-        Returns
-        -----------------------------------------------
-        delta_sigma: ndarray
-            :math:'\Delta\Sigma = \bar{\Sigma} - \Sigma' in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'
-            It has the same dimensions as r.
-        
-        """
+    def nfwDeltaSigma(self, r):
         #[r] = Mpc
         rs = self.rs
         
@@ -409,7 +343,7 @@ class nfwProfile(profile):
 '''
 class nfwBMOProfile(profile):
     
-    def __init__(self, parameters, zL, n, mdef, chooseCosmology, Tau = None, cM_relation = None, esp = None):
+    def r(self, parameters, zL, n, mdef, chooseCosmology, Tau = None, cM_relation = None, esp = None):
         profile.__init__(self, zL, mdef, chooseCosmology)
         
         cosmo = Cosmology.setCosmology(chooseCosmology)
@@ -548,17 +482,17 @@ class nfwBMOProfile(profile):
 ############################################################################
 '''
 
-class dkProfile(profile):
+class dkProfile(Profile1D):
     
     def __init__(self, parameters, zL, mdef, chooseCosmology, part = None, \
                  se = None, be = None, cM_relation = None):
         profile.__init__(self, zL, mdef, chooseCosmology)
         
         
-        self.M_mdef = parameters['M'].value #M200 in M_dot/h
+        self.M_mdef = parameters['M'].value #M200
         
         if cM_relation == True:
-            self.c = hc.concentration(self.M, self.mdef, self.zL)
+            self.c = hc.concentration(self.M*self.cosmo.h, self.mdef, self.zL)
             #self.c = 3.614*((1+self.zL)**(-0.424))*(self.M/self.cosmo.h/1E14)**(-0.105)
         else:
             self.c = parameters['c'].value
@@ -580,7 +514,7 @@ class dkProfile(profile):
         else:
             self.part = 'both'
         #[rs] = Mpc/h
-        self.r_mdef = Halo.mass_so.M_to_R(self.M_mdef, self.zL, self.mdef)/1E3 #Mpc/h
+        self.r_mdef = Halo.mass_so.M_to_R(self.M_mdef*self.cosmo.h, self.zL, self.mdef)/1E3/self.cosmo.h #Mpc
         self.rs = self.r_mdef/self.c #Mpc/h
         self.Delta = int(mdef[:-1])
         #[rho_mdef] = M_dot Mpc^3 from M_{\odot}h^2/kpc^3
@@ -592,7 +526,7 @@ class dkProfile(profile):
                                                        be = self.be, se = self.se, \
                                                        part = self.part)
         '''
-        self.dk14Prof = profile_dk14.getDK14ProfileWithOuterTerms(M = self.M_mdef, c = self.c, z = self.zL, 
+        self.dk14Prof = profile_dk14.getDK14ProfileWithOuterTerms(M = self.M_mdef*self.cosmo.h, c = self.c, z = self.zL, 
                                      mdef = self.mdef, 
                                      outer_term_names = ['pl'])
         #self.dk14Prof.par.se = self.se
@@ -607,42 +541,27 @@ class dkProfile(profile):
         
         return
     
-    def density_3d(self,R):
-        """
-        DK14 3D volume density profile, :math:'\rho'. It is a function of radius. See Diemer & Kravtsov (2014)
-
-        Parameters
-        -----------------------------------------------
-        r: ndarray
-            The radius in units of Mpc.
-
-        Returns
-        -----------------------------------------------
-        rho: ndarray
-            :math:'\rho', the 3D density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^3'.
-            It has the same dimensions as r. 
-
-        """
-        #input [R] = Mpc/h
-        R = R*1E3 #[R] = kpc/h from Mpc/h for Diemer input
+    def dkrho(self,r):
+        #input [R] = Mpc
+        R = r*1E3*self.cosmo.h #[R] = kpc/h from Mpc for Diemer input
         rho = self.dk14Prof.density(R) *1E9 #[rho] = M_dot h^2 / Mpc^3 from M_{\odot} h^2/ kpc^3
         #[rho] = M_dot / Mpc^3 from M_dot h^2 / Mpc^3
         rho = rho * (self.cosmo.h**2.)
         return rho 
     
-    def surface_density(self,R):
-        #input [R] = Mpc/h
-        #[R] = kpc/h from Mpc/h for Diemer input
-        r = R*1E3
-        self.dk14Prof.rmax = r[-1]*self.rmaxMult
+    def dkSigma(self,r):
+        #input [R] = Mpc
+        #[R] = kpc/h from Mpc for Diemer input
+        R = r*1E3*self.cosmo.h
+        #self.dk14Prof.rmax = R[-1]*self.rmaxMult
         #[surfaceDensity] = M_dot h/Mpc^2 from M_{\odot} h/kpc^2
-        SigmaDiemer = self.dk14Prof.surfaceDensity(r) * 1E6
+        SigmaDiemer = self.dk14Prof.surfaceDensity(R) * 1E6
         #[Sigma] = M_dot / Mpc^2 from `M_{\odot} h/Mpc^2`
         SigmaDiemer = SigmaDiemer * self.cosmo.h
         return SigmaDiemer #[Sigma] = M_dot/Mpc^2
     
     def dkDeltaSigma(self,r):
-        #input [r] = Mpc/h
+        #input [r] = Mpc
         '''
         #[R] = kpc/h from Mpc/h for Diemer input
         r = R*1E3
@@ -652,9 +571,15 @@ class dkProfile(profile):
         #[Sigma] = M_dot / Mpc^2 from `M_{\odot} h/Mpc^2`
         SigmaDiemer = SigmaDiemer * self.cosmo.h
         '''
+        
+        ########## Doesn't work!!!!!
         #[r] = kpc/h from Mpc (Diemer input)
-        dSig = self.dk14Prof.deltaSigma(r*1E3*self.cosmo.h)
+        R = r*1E3*self.cosmo.h
+        #self.dk14Prof.rmax = R[-1]*self.rmaxMult
+        dSig = self.dk14Prof.deltaSigma(R)
         #output :math:`M_{\odot} h/{\\rm kpc}^2`
+        ########## up to here
+        
         
         return dSig * self.cosmo.h #[Sigma] = M_dot/Mpc^2 from M_dot h^2 / Mpc^2
     
