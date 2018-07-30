@@ -7,211 +7,14 @@ Created on Thu Nov 19 15:05:13 2015
 
 
 import colossus.cosmology.cosmology as Cosmology
-from colossus.utils import constants
 import colossus.halo.profile_dk14 as profile_dk14
-#import HaloDensityProfile
 import colossus.halo as Halo
 import colossus.halo.concentration as hc
-#import HaloConcentration as hc
-#import cosmolopy.distance as cd
+import profile
 
 
 import numpy as np
-from scipy import integrate
-from abc import ABCMeta
 
-
-class profile(object):
-    
-    __metaclass__ = ABCMeta
-    
-    def __init__(self, zL, mdef, chooseCosmology):
-        self.chooseCosmology = chooseCosmology
-        self.zL = zL
-        self.mdef = mdef
-        self.G, self.v_c, self.H2, self.cosmo = self.calcConstants()
-        return
-    
-    '''
-    ############################################################################
-                            Constants for Profiles
-    ############################################################################
-    '''
-    
-
-    def calcConstants(self):
-        chooseCosmology = self.chooseCosmology
-        zL = self.zL
-        listCosmologies = ['planck15-only', 'planck15', 'planck13-only', \
-    'planck13', 'WMAP9-only', 'WMAP9-ML', 'WMAP9', 'WMAP7-only', 'WMAP7-ML', \
-    'WMAP7', 'WMAP5-only', 'WMAP5-ML', 'WMAP5', 'WMAP3-ML', 'WMAP3', \
-    'WMAP1-ML', 'WMAP1', 'bolshoi', 'millennium', 'powerlaw']        
-        if chooseCosmology is None:
-            raise Exception('A name for the cosmology must be set.')
-        if chooseCosmology not in listCosmologies:
-            msg = 'Cosmology must be one of ' + str(listCosmologies)    
-            raise Exception(msg)
-        if chooseCosmology in listCosmologies:
-            cosmo = Cosmology.setCosmology(chooseCosmology)
-        # Gravitational constant [G] = Mpc * m^2 / M_{\odot}/s^2 from kpc * km^2 / M_{\odot} / s^2
-        #G = Cosmology.AST_G * 1E3
-        G = constants.G * 1E3
-        
-        # Hubble parameter H(z)^2 [H0] = m/s/Mpc #from km/s/Mpc
-        #[H2] = (m/s/Mpc)^2
-        H2 = (cosmo.Hz(zL)**2.)*1E6
-        # speed of light v_c [v_c] = m/s from [AST_c] = cm/s 
-        #v_c = Cosmology.AST_c / 1E2
-        v_c = constants.C/1E2
-        
-        return G, v_c, H2, cosmo
-    
-    '''
-    ############################################################################
-                          Critical Surface Mass Density
-    ############################################################################
-    '''
-    
-    # geometric lensing efficiency, beta = D_ls / D_s
-    def beta_function(self, zs):
-        
-        # temporary save for kwdarg for CosmoloPy distance calculations
-        cosmo_temp = {'omega_M_0' : self.cosmo.Om0, \
-                 'omega_lambda_0' : self.cosmo.Ode0, \
-                 'h' : self.cosmo.h}
-        self.cosmoDist = cd.set_omega_k_0(cosmo_temp)
-
-        self.Dl = cd.angular_diameter_distance(self.zL, **self.cosmoDist)
-        self.Dls = cd.angular_diameter_distance(zs, self.zL, **self.cosmoDist)
-        self.Ds = cd.angular_diameter_distance(zs, **self.cosmoDist)
-        return self.Dls/self.Ds
-        '''
-        if isinstance(zs, np.ndarray):
-            beta_s = np.piecewise(zs, [zs <= self.zL, zs > self.zL], \
-                                [lambda zs: 0., \
-                                 lambda zs: 1.-self.Dl*(1.+self.zL)/cd.comoving_distance(zs, z0=0., **self.cosmoDist)])
-        
-        else: 
-            if (zs<=self.zL): 
-                beta_s = 0.
-            else:
-                beta_s = 1.-self.Dl*(1.+ self.zL)/cd.comoving_distance(zs, z0=0., **self.cosmoDist)
-        return beta_s
-        '''
-        
-    def beta_descrete_mean(self, zs):
-        # arithmatic mean for descrete beta_source
-        if isinstance(zs, np.ndarray):
-            return np.mean(self.beta_function(zs))
-
-    def beta_square_descrete_mean(self, zs):
-        # arithmatic mean for descrete beta_source
-        if isinstance(zs, np.ndarray):
-            return np.mean(self.beta_function(zs**2))
-
-    def sigma_crit(self, zs):
-        #Dd = cd.angular_diameter_distance(self.zL, **self.cosmoDist)
-        # some astrophysical parameters
-        Mpc2meter=3.08568025*10**22 # Mpc to meters
-        Msolar2kg=1.989*10**30 # kg
-        clight=self.v_c/Mpc2meter # m/s -> Mpc/s
-        G = 6.67428*10**(-11)/(Mpc2meter**3)*Msolar2kg # m3/(kg·s^2) --> Mpc^3/(solar mass * s^2)
-        return clight**2/(4.*np.pi*G*self.Dl*self.beta_function(zs))
-    
-
-    '''
-    ############################################################################
-                                  rho & Sigma
-    ############################################################################
-    '''
-    
-    def rho(self,r):
-        #[r] = Mpc
-        if self.profile == 'nfw':
-            rho = self.nfwrho(r)
-            
-        if self.profile == 'dk':
-            rho = self.dkrho(r)
-            
-        if self.profile == 'nfwBMO':
-            rho = self.bmorho(r)
-            
-        return rho
-    
-    def Sigma(self,r):
-        #[r] = Mpc
-        if self.profile == 'nfw':
-            Sigma = self.nfwSigma(r)
-            
-        if self.profile == 'dk':
-            Sigma = self.dkSigma(r)
-            
-        if self.profile == 'nfwBMO':
-            Sigma = self.bmoSigma(r)
-            
-        return Sigma
-    
-    
-    '''
-    ############################################################################
-                                  SigmaMean
-    ############################################################################
-    '''
-    
-    def SigmaMean(self,r):
-        #[r] = Mpc
-        
-        if self.profile == 'nfw':
-            SigmaMean = self.nfwSigmaMean(r)
-        #set first bin of SigmaMean[0] to Sigma[0]
-        
-        if self.profile == 'dk':
-            R = np.asarray(r)
-            add = np.arange(0.0001, R[0], 0.001)
-            r = []
-            r.extend(add)
-            r.extend(R)
-            r = np.asarray(r)
-            
-            Sigma = self.Sigma(r)
-            SigmaInt = integrate.cumtrapz(Sigma*r, r, initial = 0)
-            SigmaMean = 2.*SigmaInt/(r**2.)
-            SigmaMean = SigmaMean[len(add):]
-            #SigmaMean[0] = Sigma[0]
-            
-        if self.profile == 'nfwBMO':
-            SigmaMean = self.bmoSigmaMean(r)
-            
-        #SigmaMean[0] = self.Sigma(r[0])
-        return SigmaMean
-    
-    def deltaSigma(self,r):
-        #[r] = Mpc
-        if self.profile == 'nfw':
-            dSig = self.nfwDeltaSigma(r)
-        if self.profile == 'dk':
-            '''
-            R = np.asarray(r)
-            add = np.arange(0.0001, R[0], 0.001)
-            r = []
-            r.extend(add)
-            r.extend(R)
-            r = np.asarray(r)
-            
-            Sigma = self.Sigma(r)
-            SigmaInt = integrate.cumtrapz(Sigma*r, r, initial = 0)
-            SigmaMean = 2.*SigmaInt/(r**2.)
-            
-            Sigma = Sigma[len(add):]
-            SigmaMean = SigmaMean[len(add):]
-            dSig = SigmaMean - Sigma
-            '''
-            #dSig = self.dkDeltaSigma(r)
-            dSig = self.SigmaMean(r)-self.Sigma(r)
-        if self.profile == 'nfwBMO':
-            dSig = self.bmoSigmaMean(r) - self.bmoSigma(r)
-        return dSig
-        
 
 '''
 ############################################################################
@@ -343,7 +146,7 @@ class nfwProfile(Profile1D):
 '''
 class nfwBMOProfile(profile):
     
-    def r(self, parameters, zL, n, mdef, chooseCosmology, Tau = None, cM_relation = None, esp = None):
+    def __init__(self, parameters, zL, n, mdef, chooseCosmology, Tau = None, cM_relation = None, esp = None):
         profile.__init__(self, zL, mdef, chooseCosmology)
         
         cosmo = Cosmology.setCosmology(chooseCosmology)
@@ -515,7 +318,7 @@ class dkProfile(Profile1D):
             self.part = 'both'
         #[rs] = Mpc/h
         self.r_mdef = Halo.mass_so.M_to_R(self.M_mdef*self.cosmo.h, self.zL, self.mdef)/1E3/self.cosmo.h #Mpc
-        self.rs = self.r_mdef/self.c #Mpc/h
+        self.rs = self.r_mdef/self.c #Mpc
         self.Delta = int(mdef[:-1])
         #[rho_mdef] = M_dot Mpc^3 from M_{\odot}h^2/kpc^3
         self.rho_mdef = (Halo.mass_so.densityThreshold(self.zL, self.mdef) * 1E9 *(self.cosmo.h)**2.)/self.Delta
