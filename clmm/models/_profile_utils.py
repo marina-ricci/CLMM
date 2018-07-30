@@ -66,17 +66,57 @@ class sigma_crit
 
 
 
-    def _beta_function(self, z_source) :
+    def beta_function(self, z_source) :
         
         return self.cosmo.angular_diameter_distance( self.z_lens ) / self.cosmo.angular_diameter_distance( self.z_source )
 
         pass
 
-    def _beta_discrete_mean( z_source ) :
-        pass
+    def beta_discrete_mean(self, z_source ) :
+        """
+        Arithmetic mean for discrete lensing efficiency <beta> for given source redshift or redshifts
+        
+        Parameters
+        ----------
 
-    def _beta_square_discrete_mean( z_source ) :
-        pass
+        z_source : float or array-like of floats
+            Source redshift or redshifts
+        
+        """
+
+        if np.iterable(z_source) and all(isinstance(z_s, float) for z_s in z_source) :
+            return np.mean(self.beta_function(z_source))
+
+        elif isinstance(z_source, float) :
+            return self.beta_function(z_source)
+
+        else :
+            raise TypeError("z_source must be float or array-like of floats ")
+            
+
+
+    def beta_square_discrete_mean( z_source ) :
+        """
+        Mean of the square of the discrete lensing efficiency <beta^2>
+        
+        Parameters
+        ----------
+
+        z_source : float or array-like of floats
+            Source redshift or redshifts
+
+        """
+
+        if np.iterable(z_source) and all(isinstance(z_s, float) for z_s in z_source) :
+            return np.mean(self.beta_function(z_source))
+
+        elif isinstance(z_source, float) :
+            return self.beta_function(z_source)
+
+        else :
+            raise TypeError("z_source must be float or array-like of floats ")
+            
+
 
 
 def _angular_diameter_distance_two_objects(z_lens, z_source, cosmology) :
