@@ -223,7 +223,7 @@ class Profile1D(Model) :
         
         """
 
-        sigma_crit = sigma_crit(self.z_lens, z_source, self.mass_definition, self.cosmology).calculate_sigma_crit()
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
         sigma = self.surface_density(r)
         kappa = sigma/sigma_crit
         return kappa
