@@ -630,8 +630,21 @@ class dkProfile(profile):
         return rho 
     
     def surface_density(self,R):
-        #input [R] = Mpc/h
-        #[R] = kpc/h from Mpc/h for Diemer input
+        """
+        DK14 projected surface density profile, :math:'\Sigma'. It is a function of radius. See Diemer & Kravtsov (2014)
+
+        Parameters
+        -----------------------------------------------
+        r: ndarray
+            The radius in units of Mpc.
+
+        Returns
+        -----------------------------------------------
+        sigma: ndarray
+            :math:'\Sigma', the surface density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'. 
+            It has the same dimensions as r.
+        
+        """
         r = R*1E3
         self.dk14Prof.rmax = r[-1]*self.rmaxMult
         #[surfaceDensity] = M_dot h/Mpc^2 from M_{\odot} h/kpc^2
@@ -640,7 +653,7 @@ class dkProfile(profile):
         SigmaDiemer = SigmaDiemer * self.cosmo.h
         return SigmaDiemer #[Sigma] = M_dot/Mpc^2
     
-    def dkDeltaSigma(self,r):
+    def delta_sigma(self,r):
         #input [r] = Mpc/h
         '''
         #[R] = kpc/h from Mpc/h for Diemer input
@@ -652,6 +665,24 @@ class dkProfile(profile):
         SigmaDiemer = SigmaDiemer * self.cosmo.h
         '''
         #[r] = kpc/h from Mpc (Diemer input)
+
+        """
+        Difference in mean_surface density and surface density, :math:'\Delta\Sigma = \bar{\Sigma} - \Sigma'. It is a function of radius.
+
+        See Diemer & Kravtsov (2014)
+
+        Parameters
+        -----------------------------------------------
+        r: ndarray
+            The radius in units of Mpc.
+
+        Returns
+        -----------------------------------------------
+        delta_sigma: ndarray
+            :math:'\Delta\Sigma = \bar{\Sigma} - \Sigma' in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'
+            It has the same dimensions as r.
+        
+        """
         dSig = self.dk14Prof.deltaSigma(r*1E3*self.cosmo.h)
         #output :math:`M_{\odot} h/{\\rm kpc}^2`
         
