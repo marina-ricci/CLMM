@@ -2,6 +2,7 @@
 
 from models.models import Model
 from scipy import integrate
+from _profile_utils import sigma_crit
 
 class Profile1D(Model) :
     """
@@ -181,7 +182,7 @@ class Profile1D(Model) :
         
         """
 
-        #pretend like we have sigmaC
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.mass_definition, self.cosmology)
         sigma = self.surface_density(r)
         kappa = sigma/sigmaC
         return kappa
