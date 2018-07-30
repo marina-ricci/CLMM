@@ -1,9 +1,9 @@
 '''General profile class that inherits from Models'''
 
-import models
+from models.models import Model
 from scipy import integrate
 
-class Profile1D(models) :
+class Profile1D(Model) :
     """
     Generalized superclass for 1D model profiles. It inherits from Models.
 
@@ -45,7 +45,7 @@ class Profile1D(models) :
 
         
         # Need to implement r as the independent_var for all Profile1D models
-        Models.__init__(self, func, params=params)
+        super().__init__(func, params=params)
     
     def density_3d(self,r):
         """
