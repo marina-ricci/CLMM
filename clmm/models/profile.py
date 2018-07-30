@@ -2,6 +2,9 @@
 
 from models.models import Model
 from scipy import integrate
+import numpy as np
+
+RELATIVE_ERROR = 1E-6
 
 class Profile1D(Model) :
     """
@@ -28,7 +31,7 @@ class Profile1D(Model) :
     def __init__(self, z_lens, mass_definition, cosmology, func, params=None) :
         
         if isinstance(z_lens, float) :
-            self.z_lens = zlens
+            self.z_lens = z_lens
         else :
             raise TypeError('z_lens should be a float')
 
@@ -38,7 +41,7 @@ class Profile1D(Model) :
             # Need to implement test of valid mass_definitions
             raise TypeError('mass_definition should be a string')
 
-        if isinstance(cosmology, string) :
+        if isinstance(cosmology, str) :
             self.cosmology = cosmology
         else :
             raise TypeError('cosmology should be a string')
@@ -65,7 +68,7 @@ class Profile1D(Model) :
             It has the same dimensions as r. 
 
         """
-        pass
+        return self.func(r, self.params)
     
     def surface_density(self, r):
         """
@@ -87,13 +90,13 @@ class Profile1D(Model) :
         """
 
         def integrand(r, R):
-            ret = 2.0 * r * self.density_3d(r) / numpy.sqrt(r**2 - R**2)
+            ret = 2.0 * r * self.density_3d(r) / np.sqrt(r**2 - R**2)
             return ret
 
         r_use = r.tolist()
         surface_density = (0.0 * r).tolist()
         for i in range(len(r_use)): 
-            ReturnResult = scipy.integrate.quad(integrand, r_use[i] + 0.0000001, self.rmax, args = r_use[i], epsrel = 1E-6, limit = 100000)   
+            ReturnResult = integrate.quad(integrand, r_use[i] + 0.0000001, 1000, args = r_use[i], epsrel = RELATIVE_ERROR, limit = 100000)   
             surface_density[i] = ReturnResult[0]
         surface_density = np.array(surface_density)
 
