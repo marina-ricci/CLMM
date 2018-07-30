@@ -72,16 +72,52 @@ class profile(object):
     ############################################################################
     '''
     
-    def Sc(self, zS):
-        # [D] = Mpc/h
-        Dl = self.cosmo.angularDiameterDistance(self.zL)
-        Ds = self.cosmo.angularDiameterDistance(zS) 
-        Dls = Ds - (1. + self.zL) * Dl /(1.+zS) #assuming flat cosmology
-        ret = (self.v_c)**2. / (4.0 * np.pi * self.G) * Ds / ( Dl * Dls)
-        #ret = ret/((1.+self.zL)**2.) # from the use of comoving scale
-        #[Sc] = M_dot / Mpc^2 from M{dot} h / Mpc^2
-        return ret * self.cosmo.h
+    # geometric lensing efficiency, beta = D_ls / D_s
+    def beta_function(self, zs):
+        
+        # temporary save for kwdarg for CosmoloPy distance calculations
+        cosmo_temp = {'omega_M_0' : self.cosmo.Om0, \
+                 'omega_lambda_0' : self.cosmo.Ode0, \
+                 'h' : self.cosmo.h}
+        self.cosmoDist = cd.set_omega_k_0(cosmo_temp)
 
+        self.Dl = cd.angular_diameter_distance(self.zL, **self.cosmoDist)
+        self.Dls = cd.angular_diameter_distance(zs, self.zL, **self.cosmoDist)
+        self.Ds = cd.angular_diameter_distance(zs, **self.cosmoDist)
+        return self.Dls/self.Ds
+        '''
+        if isinstance(zs, np.ndarray):
+            beta_s = np.piecewise(zs, [zs <= self.zL, zs > self.zL], \
+                                [lambda zs: 0., \
+                                 lambda zs: 1.-self.Dl*(1.+self.zL)/cd.comoving_distance(zs, z0=0., **self.cosmoDist)])
+        
+        else: 
+            if (zs<=self.zL): 
+                beta_s = 0.
+            else:
+                beta_s = 1.-self.Dl*(1.+ self.zL)/cd.comoving_distance(zs, z0=0., **self.cosmoDist)
+        return beta_s
+        '''
+        
+    def beta_descrete_mean(self, zs):
+        # arithmatic mean for descrete beta_source
+        if isinstance(zs, np.ndarray):
+            return np.mean(self.beta_function(zs))
+
+    def beta_square_descrete_mean(self, zs):
+        # arithmatic mean for descrete beta_source
+        if isinstance(zs, np.ndarray):
+            return np.mean(self.beta_function(zs**2))
+
+    def sigma_crit(self, zs):
+        #Dd = cd.angular_diameter_distance(self.zL, **self.cosmoDist)
+        # some astrophysical parameters
+        Mpc2meter=3.08568025*10**22 # Mpc to meters
+        Msolar2kg=1.989*10**30 # kg
+        clight=self.v_c/Mpc2meter # m/s -> Mpc/s
+        G = 6.67428*10**(-11)/(Mpc2meter**3)*Msolar2kg # m3/(kg·s^2) --> Mpc^3/(solar mass * s^2)
+        return clight**2/(4.*np.pi*G*self.Dl*self.beta_function(zs))
+    
 
     '''
     ############################################################################
@@ -182,7 +218,7 @@ class profile(object):
                                   NFW
 ############################################################################
 '''
-class nfwProfile(Profil1D):
+class nfwProfile(Profile1D):
     ##### We're going to swap out ``profile'' with ``Profile1D''
     def __init__(self, parameters, zL, mdef, chooseCosmology, esp = None):
         profile.__init__(self, zL, mdef, chooseCosmology)
@@ -196,8 +232,10 @@ class nfwProfile(Profil1D):
         #input [M] = M_dot/h
         self.r_mdef = Halo.mass_so.M_to_R(self.M_mdef*self.cosmo.h, self.zL, self.mdef)/1E3/self.cosmo.h #Mpc from kpc/h
         self.Delta = int(mdef[:-1])
-        #[rho_mdef] = M_dot / Mpc^3 from M_{\odot}h^2/kpc^3
-        self.rho_mdef = (Halo.mass_so.densityThreshold(self.zL, self.mdef) * ((1E3)**3.) * ((self.cosmo.h)**2.))/self.Delta
+
+        #[rho_mdef] = M_dot/Mpc^3 from M_{\odot}h^2/kpc^3
+        self.rho_mdef = (Halo.mass_so.densityThreshold(self.zL, self.mdef) * ((1E3)**3.) *(self.cosmo.h)**2.)/self.Delta
+
         self.rs = self.r_mdef/self.c #Mpc
         self.profile = 'nfw'
         if esp == None:
