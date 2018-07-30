@@ -118,7 +118,7 @@ class Profile1D(Models) :
 
         if return_sigma:
             return (sigmaMean, sigma)
-        if not return_sigma:
+        else:
             return sigmaMean
 
     
@@ -161,7 +161,11 @@ class Profile1D(Models) :
             :math:'\kappa', the convergence, which is unitless. It has the same dimensions of r.
         
         """
-        pass
+
+        #pretend like we have sigmaC
+        sigma = self.surface_density(r)
+        kappa = sigma/sigmaC
+        return kappa
     
     def mean_convergence(self, r, z_source):
         """
@@ -180,7 +184,9 @@ class Profile1D(Models) :
             :math:'\bar{\kappa}', the mean convergence enclosed by r, which is unitless. It has the same dimensions as r.
         
         """
-        pass
+        mean_sigma = self.mean_surface_density(r)
+        mean_kappa = mean_sigma/sigmaC
+        return mean_kappa
     
     def shear(self, r, z_source):
         """
@@ -199,7 +205,9 @@ class Profile1D(Models) :
             :math:'\gamma_t', the tangential shear, which is unitless. It has the same dimensions as r.
         
         """
-        pass
+        delta_sigma = self.delta_sigma(r)
+        gamma = delta_sigma/sigmaC
+        return gamma
     
     def reduced_shear(self, r, z_source):
         """
@@ -214,10 +222,12 @@ class Profile1D(Models) :
 
         Returns
         -----------------------------------------------
-        g: ndarray
+        redg: ndarray
             :math:'g_t', the tangential reduced shear, which is unitless. It has the same dimensions as r.
         
         """
-        pass
-    
+        mean_sigma, sigma = self.mean_surface_density(r, return_sigma=True)
+
+        redg = (mean_sigma-sigma)/(sigmaC-sigma)
+        return redg    
     

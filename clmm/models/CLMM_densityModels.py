@@ -250,12 +250,12 @@ class nfwProfile(profile):
         sigma_c = (Delta/3.)*(self.c**3.)/(np.log(1. + self.c) - self.c/(1. + self.c))
         return sigma_c #unitless
     
-    def nfwrho(self, R):
-        #R in Mpc
+    def nfwrho(self, r):
+        #r in Mpc
         #[sigma_c] = unitless
         #[rho_mdef] = M_dot / Mpc^3
         const =  self.rho_mdef * self.charOverdensity() 
-        rhoForm = 1./( (R/self.rs) * (1. + R/self.rs)**2.)
+        rhoForm = 1./( (r/self.rs) * (1. + r/self.rs)**2.)
         return (const * rhoForm)
         
     def nfwSigma(self, r):
