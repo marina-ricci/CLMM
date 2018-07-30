@@ -1,8 +1,16 @@
 '''General profile class that inherits from Models'''
 
 from models.models import Model
+import scipy
 from scipy import integrate
 from _profile_utils import sigma_crit
+import numpy as np
+
+import colossus.cosmology.cosmology as Cosmology
+from colossus.utils import constants
+import colossus.halo.profile_dk14 as profile_dk14
+import colossus.halo as Halo
+import colossus.halo.concentration as hc
 
 class Profile1D(Model) :
     """
@@ -29,7 +37,7 @@ class Profile1D(Model) :
     def __init__(self, z_lens, mass_definition, cosmology, func, params=None) :
         
         if isinstance(z_lens, float) :
-            self.z_lens = zlens
+            self.z_lens = z_lens
         else :
             raise TypeError('z_lens should be a float')
 
@@ -39,7 +47,7 @@ class Profile1D(Model) :
             # Need to implement test of valid mass_definitions
             raise TypeError('mass_definition should be a string')
 
-        if isinstance(cosmology, string) :
+        if isinstance(cosmology, str) :
             self.cosmology = cosmology
         else :
             raise TypeError('cosmology should be a string')
@@ -47,6 +55,39 @@ class Profile1D(Model) :
         
         # Need to implement r as the independent_var for all Profile1D models
         super().__init__(func, params=params)
+        
+    '''
+    ############################################################################
+                            Constants for Profiles
+    ############################################################################
+    '''
+    def calcConstants(self):
+        chooseCosmology = self.chooseCosmology
+        zL = self.zL
+        listCosmologies = ['planck15-only', 'planck15', 'planck13-only', \
+    'planck13', 'WMAP9-only', 'WMAP9-ML', 'WMAP9', 'WMAP7-only', 'WMAP7-ML', \
+    'WMAP7', 'WMAP5-only', 'WMAP5-ML', 'WMAP5', 'WMAP3-ML', 'WMAP3', \
+    'WMAP1-ML', 'WMAP1', 'bolshoi', 'millennium', 'powerlaw']        
+        if chooseCosmology is None:
+            raise Exception('A name for the cosmology must be set.')
+        if chooseCosmology not in listCosmologies:
+            msg = 'Cosmology must be one of ' + str(listCosmologies)    
+            raise Exception(msg)
+        if chooseCosmology in listCosmologies:
+            cosmo = Cosmology.setCosmology(chooseCosmology)
+        # Gravitational constant [G] = Mpc * m^2 / M_{\odot}/s^2 from kpc * km^2 / M_{\odot} / s^2
+        #G = Cosmology.AST_G * 1E3
+        G = constants.G * 1E3
+        
+        # Hubble parameter H(z)^2 [H0] = m/s/Mpc #from km/s/Mpc
+        #[H2] = (m/s/Mpc)^2
+        H2 = (cosmo.Hz(zL)**2.)*1E6
+        # speed of light v_c [v_c] = m/s from [AST_c] = cm/s 
+        #v_c = Cosmology.AST_c / 1E2
+        v_c = constants.C/1E2
+        
+        return G, v_c, H2, cosmo
+    
     
     def density_3d(self,r):
         """
@@ -88,13 +129,13 @@ class Profile1D(Model) :
         """
 
         def integrand(r, R):
-            ret = 2.0 * r * self.density_3d(r) / numpy.sqrt(r**2 - R**2)
+            ret = 2.0 * r * self.density_3d(r) / np.sqrt(r**2 - R**2)
             return ret
 
         r_use = r.tolist()
         surface_density = (0.0 * r).tolist()
         for i in range(len(r_use)): 
-            ReturnResult = scipy.integrate.quad(integrand, r_use[i] + 0.0000001, self.rmax, args = r_use[i], epsrel = 1E-6, limit = 100000)   
+            ReturnResult = integrate.quad(integrand, r_use[i] + 0.0000001, self.rmax, args = r_use[i], epsrel = 1E-6, limit = 100000)   
             surface_density[i] = ReturnResult[0]
         surface_density = np.array(surface_density)
 
@@ -184,7 +225,7 @@ class Profile1D(Model) :
 
         sigma_crit = sigma_crit(self.z_lens, z_source, self.mass_definition, self.cosmology)
         sigma = self.surface_density(r)
-        kappa = sigma/sigmaC
+        kappa = sigma/sigma_crit
         return kappa
     
     def mean_convergence(self, r, z_source):
