@@ -50,7 +50,7 @@ class Profile1D(Models) :
     
     def surface_density(self, r):
         """
-        Surface density profile, :math:'\Sigma'. It is a function of radius.
+        Projected surface density profile, :math:'\Sigma'. It is a function of radius.
 
         Abstract function which must be overwritten by child classes.
 
