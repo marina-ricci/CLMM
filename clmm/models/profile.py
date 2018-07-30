@@ -8,11 +8,6 @@ RELATIVE_ERROR = 1E-6
 from _profile_utils import sigma_crit
 import numpy as np
 
-import colossus.cosmology.cosmology as Cosmology
-from colossus.utils import constants
-import colossus.halo.profile_dk14 as profile_dk14
-import colossus.halo as Halo
-import colossus.halo.concentration as hc
 
 class Profile1D(Model) :
     """
@@ -57,39 +52,7 @@ class Profile1D(Model) :
         
         # Need to implement r as the independent_var for all Profile1D models
         super().__init__(func, params=params)
-        
-    '''
-    ############################################################################
-                            Constants for Profiles
-    ############################################################################
-    '''
-    def calcConstants(self):
-        chooseCosmology = self.chooseCosmology
-        zL = self.zL
-        listCosmologies = ['planck15-only', 'planck15', 'planck13-only', \
-    'planck13', 'WMAP9-only', 'WMAP9-ML', 'WMAP9', 'WMAP7-only', 'WMAP7-ML', \
-    'WMAP7', 'WMAP5-only', 'WMAP5-ML', 'WMAP5', 'WMAP3-ML', 'WMAP3', \
-    'WMAP1-ML', 'WMAP1', 'bolshoi', 'millennium', 'powerlaw']        
-        if chooseCosmology is None:
-            raise Exception('A name for the cosmology must be set.')
-        if chooseCosmology not in listCosmologies:
-            msg = 'Cosmology must be one of ' + str(listCosmologies)    
-            raise Exception(msg)
-        if chooseCosmology in listCosmologies:
-            cosmo = Cosmology.setCosmology(chooseCosmology)
-        # Gravitational constant [G] = Mpc * m^2 / M_{\odot}/s^2 from kpc * km^2 / M_{\odot} / s^2
-        #G = Cosmology.AST_G * 1E3
-        G = constants.G * 1E3
-        
-        # Hubble parameter H(z)^2 [H0] = m/s/Mpc #from km/s/Mpc
-        #[H2] = (m/s/Mpc)^2
-        H2 = (cosmo.Hz(zL)**2.)*1E6
-        # speed of light v_c [v_c] = m/s from [AST_c] = cm/s 
-        #v_c = Cosmology.AST_c / 1E2
-        v_c = constants.C/1E2
-        
-        return G, v_c, H2, cosmo
-    
+            
     
     def density_3d(self,r):
         """
