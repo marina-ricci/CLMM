@@ -246,56 +246,22 @@ class nfwProfile(profile):
     ############################################################################
     '''
     def charOverdensity(self):
-        """
-        Characteristic overdensity, :math:'\delta_c=\rho_0/\rho_c'.
-
-        Returns
-        -----------------------------------------------
-        delta_c: float
-            The characteristic overdensity, :math:'\delta_c'
-
-
-        """
         Delta = int(self.mdef[:-1])
-        delta_c = (Delta/3.)*(self.c**3.)/(np.log(1. + self.c) - self.c/(1. + self.c))
-        return delta_c #unitless
+        sigma_c = (Delta/3.)*(self.c**3.)/(np.log(1. + self.c) - self.c/(1. + self.c))
+        return sigma_c #unitless
     
-    def density_3d(self, r):
-        """
-        NFW 3D volume density profile, :math:'\rho = \frac{\rho_0}{(r/rs)(1+r/rs)^2}'. It is a function of radius.
-
-        Parameters
-        -----------------------------------------------
-        r: ndarray
-            The radius in units of Mpc.
-
-        Returns
-        -----------------------------------------------
-        rho: ndarray
-            :math:'\rho', the 3D density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^3'.
-            It has the same dimensions as r. 
-
-        """
+    def nfwrho(self, R):
+        #R in Mpc
+        #[sigma_c] = unitless
+        #[rho_mdef] = M_dot / Mpc^3
         const =  self.rho_mdef * self.charOverdensity() 
-        rhoForm = 1./( (r/self.rs) * (1. + r/self.rs)**2.)
+        rhoForm = 1./( (R/self.rs) * (1. + R/self.rs)**2.)
         return (const * rhoForm)
         
-    def surface_density(self, r):
-        """
-        NFW projected surface density profile, :math:'\Sigma'. It is a function of radius. See Wright & Brainerd (2000) for equations.
-
-        Parameters
-        -----------------------------------------------
-        r: ndarray
-            The radius in units of Mpc.
-
-        Returns
-        -----------------------------------------------
-        sigma: ndarray
-            :math:'\Sigma', the surface density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'. 
-            It has the same dimensions as r.
+    def nfwSigma(self, r):
+        #[r] = Mpc
         
-        """       
+        #[rs] = Mpc        
         rs = self.rs
         expSig = np.empty(len(r))
         for i in range(len(r)):
@@ -313,26 +279,8 @@ class nfwProfile(profile):
         #[Sigma] = M_dot / Mpc^2 
         return (expSig * const)
     
-    def mean_surface_density(self, r, return_sigma=False):
-        """
-        NFW mean enclosed surface density, :math:'\bar{\Sigma}'. It is a function of radius. See Wright & Brainerd (2000) for equations.
-
-        Parameters
-        -----------------------------------------------
-        r: ndarray
-            The radius in units of Mpc.
-        return_sigma: bool
-            A flag for whether or not to also return the surface density, since it's calculated anyways in this method
-
-        Returns
-        -----------------------------------------------
-        sigmaMean: ndarray
-            :math:'\bar{\Sigma}', the mean enclosed surface density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'
-            It has the same dimensions as r.
-        sigma
-            The surface density. Optional return, since surface density is calculated in the process
-        
-        """
+    def nfwSigmaMean(self, r):
+        #[r] = Mpc
         x = r/self.rs
         const = 4.*self.rs*self.charOverdensity()*self.rho_mdef
         if type(x) is np.ndarray:
@@ -353,23 +301,7 @@ class nfwProfile(profile):
         
         
     
-    def delta_sigma(self, r):
-        """
-        Difference in mean_surface density and surface density, :math:'\Delta\Sigma = \bar{\Sigma} - \Sigma'. It is a function of radius.
-        See Wright & Brainerd (2000) for equations.
-
-        Parameters
-        -----------------------------------------------
-        r: ndarray
-            The radius in units of Mpc.
-
-        Returns
-        -----------------------------------------------
-        delta_sigma: ndarray
-            :math:'\Delta\Sigma = \bar{\Sigma} - \Sigma' in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'
-            It has the same dimensions as r.
-        
-        """
+    def nfwDeltaSigma(self, r):
         #[r] = Mpc
         rs = self.rs
         
@@ -606,22 +538,7 @@ class dkProfile(profile):
         
         return
     
-    def density_3d(self,R):
-        """
-        DK14 3D volume density profile, :math:'\rho'. It is a function of radius. See Diemer & Kravtsov (2014)
-
-        Parameters
-        -----------------------------------------------
-        r: ndarray
-            The radius in units of Mpc.
-
-        Returns
-        -----------------------------------------------
-        rho: ndarray
-            :math:'\rho', the 3D density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^3'.
-            It has the same dimensions as r. 
-
-        """
+    def dkrho(self,R):
         #input [R] = Mpc/h
         R = R*1E3 #[R] = kpc/h from Mpc/h for Diemer input
         rho = self.dk14Prof.density(R) *1E9 #[rho] = M_dot h^2 / Mpc^3 from M_{\odot} h^2/ kpc^3
@@ -629,7 +546,7 @@ class dkProfile(profile):
         rho = rho * (self.cosmo.h**2.)
         return rho 
     
-    def surface_density(self,R):
+    def dkSigma(self,R):
         #input [R] = Mpc/h
         #[R] = kpc/h from Mpc/h for Diemer input
         r = R*1E3
