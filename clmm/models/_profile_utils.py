@@ -65,13 +65,13 @@ class sigma_crit
         """
         return constants.c.to('Mpc/s') * constants.c.to('Mpc/s') / \
             (4. * np.pi *  constants.G.to('Mpc3 / (Msun  s2)') * \
-             self.cosmo.angular_diameter_distance(self.z_lens) * self.beta_function(z_source) )
+             self.cosmology.angular_diameter_distance(self.z_lens) * self.beta_function(z_source) )
 
 
 
     def beta_function(self, z_source) :
         
-        return self.angular_diameter_distnce_two_objects(z_lens, z_source, cosmology) / self.cosmo.angular_diameter_distance( self.z_source )
+        return self.angular_diameter_distnce_two_objects(z_lens, z_source, cosmology) / self.cosmology.angular_diameter_distance( self.z_source )
 
         pass
 
@@ -128,8 +128,8 @@ def _angular_diameter_distance_two_objects(z_lens, z_source, cosmology) :
 
     """
     hubble_radius= constants.c.to('Mpc/s')/cosmo.H(0).to.('/s')                      
-    ang_diameter_lens = self.cosmo.angular_diameter_distance(self.z_lens)
-    ang_diameter_source = self.cosmo.angular_diameter_distance(self.z_source)
+    ang_diameter_lens = self.cosmology.angular_diameter_distance(self.z_lens)
+    ang_diameter_source = self.cosmology.angular_diameter_distance(self.z_source)
     return (ang_diameter_source*np.sqrt(1.+ ang_diameter_lens**2/hubble_radius**2) \
             - ang_diameter_lens*np.sqrt(1.+ ang_diameter_source**2/hubble_radius**2))/(1.+z_source)
     
@@ -137,14 +137,13 @@ def _angular_diameter_distance_two_objects(z_lens, z_source, cosmology) :
 
 def _get_cosmology( cosmology ) :
     """
-    Currently only can parse for astropy cosmology options
+    Currently needs to be implemented to parse for astropy cosmology options
     
     cosmology : str
         Label of cosmology
 
 
     """
+    print("getting cosmology %s, need to implement options from astropy"%self.cosmology)
 
-    pass
-
-    
+    return apycosmology.WMAPFlatLCDM(H0=70, Om0=0.3)
