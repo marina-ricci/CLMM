@@ -121,8 +121,21 @@ class sigma_crit
 
 def _angular_diameter_distance_two_objects(z_lens, z_source, cosmology) :
     """
+    Angular diameter distance between two objects
     Hogg+00 Eqn (19)
-
+    
+    Parameters
+    ----------
+    
+    z_lens : float
+        Lens redshift or redshifts
+    
+    z_source : float
+        Source redshift or redshifts
+    
+    cosmology : str
+        Label of cosmology
+        
     """
     hubble_radius= constants.c.to('Mpc/s')/cosmo.H(0).to.('/s')                      
     ang_diameter_lens = self.cosmo.angular_diameter_distance(self.z_lens)
