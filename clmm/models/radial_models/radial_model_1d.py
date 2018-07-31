@@ -33,24 +33,13 @@ class RadialModel1D(Model) :
         List of source redshifts or single source redshift
     
     """
-    def __init__(self, z_lens, mass_definition, cosmology, func, params=None, z_source=None) :
+    def __init__(self, z_lens, func, params=None, z_source=None) :
         
         if isinstance(z_lens, float) :
             self.z_lens = z_lens
         else :
             raise TypeError('z_lens should be a float')
 
-        if isinstance(mass_definition, str) :
-            self.mass_definition = mass_definition
-        else :
-            # Need to implement test of valid mass_definitions
-            raise TypeError('mass_definition should be a string')
-
-        if isinstance(cosmology, str) :
-            self.cosmology = cosmology
-        else :
-            raise TypeError('cosmology should be a string')
-            
 
         if isinstance(z_source, float) or \
            (np.iterable(z_source) and all(isinstance(z_s,float) for z_s in z_source) ) or\
@@ -67,28 +56,7 @@ class RadialModel1D(Model) :
         self.M_mass_definition = params['M'] #[M] = M_dot
         self.c = params['c']
         self.zL = z_lens
-        self.mass_definition = mass_definition
-        self.chooseCosmology = cosmology
-        listCosmologies = ['planck15-only', 'planck15', 'planck13-only', \
-    'planck13', 'WMAP9-only', 'WMAP9-ML', 'WMAP9', 'WMAP7-only', 'WMAP7-ML', \
-    'WMAP7', 'WMAP5-only', 'WMAP5-ML', 'WMAP5', 'WMAP3-ML', 'WMAP3', \
-    'WMAP1-ML', 'WMAP1', 'bolshoi', 'millennium', 'powerlaw']        
-        if cosmology is None:
-            raise Exception('A name for the cosmology must be set.')
-        if cosmology not in listCosmologies:
-            msg = 'Cosmology must be one of ' + str(listCosmologies)    
-            raise Exception(msg)
-        if cosmology in listCosmologies:
-            self.cosmo = Cosmology.setCosmology(cosmology)
-        #input [M] = M_dot/h
-        self.r_mass_definition = M_to_R(self.M_mass_definition*self.cosmo.h, self.zL, self.mass_definition)/1E3/self.cosmo.h #Mpc from kpc/h
-        self.Delta = int(mass_definition[:-1])
         
-        
-        #[rho_mass_definition] = M_dot/Mpc^3 from M_{\odot}h^2/kpc^3
-        self.rho_mass_definition = (densityThreshold(self.zL, self.mass_definition) * ((1E3)**3.) *(self.cosmo.h)**2.)/self.Delta
-
-        self.rs = self.r_mass_definition/self.c #Mpc
         
         # Need to implement r as the independent_var for all Profile1D models
         super().__init__(func, params=params)

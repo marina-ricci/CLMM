@@ -9,6 +9,10 @@ Created on Mon Jul 30 22:32:04 2018
 from clmm.models.radial_models.radial_model_1d import RadialModel1D
 
 
+import colossus.cosmology.cosmology as Cosmology
+
+from colossus.halo.mass_so import M_to_R
+from colossus.halo.mass_so import densityThreshold
 
 import numpy as np
 
@@ -18,10 +22,45 @@ import numpy as np
                                   NFW
 ############################################################################
 '''
+#NFWProfile
 class nfwProfile(RadialModel1D):
-    def __init__(self, parameters, zL, mdef, chooseCosmology, esp = None):
-        super(nfwProfile, self).__init__(zL, mdef, chooseCosmology)
+    def __init__(self, parameters, z_lens, mass_definition, cosmology, esp = None):
+        super().__init__(z_lens, func=self.density_3d, params=None, z_source=None)
         #Profile1D.__init__(self, zL, mdef, chooseCosmology)
+        
+        if isinstance(mass_definition, str) :
+            self.mass_definition = mass_definition
+        else :
+            # Need to implement test of valid mass_definitions
+            raise TypeError('mass_definition should be a string')
+
+        if isinstance(cosmology, str) :
+            self.cosmology = cosmology
+        else :
+            raise TypeError('cosmology should be a string')
+            
+        self.mass_definition = mass_definition
+        self.chooseCosmology = cosmology
+        listCosmologies = ['planck15-only', 'planck15', 'planck13-only', \
+    'planck13', 'WMAP9-only', 'WMAP9-ML', 'WMAP9', 'WMAP7-only', 'WMAP7-ML', \
+    'WMAP7', 'WMAP5-only', 'WMAP5-ML', 'WMAP5', 'WMAP3-ML', 'WMAP3', \
+    'WMAP1-ML', 'WMAP1', 'bolshoi', 'millennium', 'powerlaw']        
+        if cosmology is None:
+            raise Exception('A name for the cosmology must be set.')
+        if cosmology not in listCosmologies:
+            msg = 'Cosmology must be one of ' + str(listCosmologies)    
+            raise Exception(msg)
+        if cosmology in listCosmologies:
+            self.cosmo = Cosmology.setCosmology(cosmology)
+        #input [M] = M_dot/h
+        self.r_mass_definition = M_to_R(self.M_mass_definition*self.cosmo.h, self.zL, self.mass_definition)/1E3/self.cosmo.h #Mpc from kpc/h
+        self.Delta = int(mass_definition[:-1])
+        
+        
+        #[rho_mass_definition] = M_dot/Mpc^3 from M_{\odot}h^2/kpc^3
+        self.rho_mass_definition = (densityThreshold(self.zL, self.mass_definition) * ((1E3)**3.) *(self.cosmo.h)**2.)/self.Delta
+
+        self.rs = self.r_mass_definition/self.c #Mpc
         
         if esp == None:
             self.esp = 1E-5
@@ -38,15 +77,15 @@ class nfwProfile(RadialModel1D):
         sigma_c = (self.Delta/3.)*(self.c**3.)/(np.log(1. + self.c) - self.c/(1. + self.c))
         return sigma_c #unitless
     
-    def nfwrho(self, R):
+    def density_3d(self, R):
         #R in Mpc
         #[sigma_c] = unitless
         #[rho_mdef] = M_dot / Mpc^3
-        const =  self.rho_mdef * self.charOverdensity() 
+        const =  self.rho_mass_definition * self.charOverdensity() 
         rhoForm = 1./( (R/self.rs) * (1. + R/self.rs)**2.)
         return (const * rhoForm)
         
-    def nfwSigma(self, r):
+    def surface_density(self, r):
         #[r] = Mpc
         
         #[rs] = Mpc        
@@ -67,7 +106,7 @@ class nfwProfile(RadialModel1D):
         #[Sigma] = M_dot / Mpc^2 
         return (expSig * const)
     
-    def nfwSigmaMean(self, r):
+    def mean_surface_density(self, r):
         #[r] = Mpc
         x = r/self.rs
         const = 4.*self.rs*self.charOverdensity()*self.rho_mdef
@@ -89,7 +128,7 @@ class nfwProfile(RadialModel1D):
         
         
     
-    def nfwDeltaSigma(self, r):
+    def delta_sigma(self, r):
         #[r] = Mpc
         rs = self.rs
         
