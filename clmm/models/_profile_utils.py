@@ -123,11 +123,16 @@ def _angular_diameter_distance_two_objects(z_lens, z_source, cosmology) :
     Hogg+00 Eqn (19)
 
     """
+    
+    '''
+    #Need cosmology to be defined else the code breaks when using cosmo.H(0).to...
     hubble_radius= constants.c.to('Mpc/s')/cosmo.H(0).to.('/s')                      
     ang_diameter_lens = self.cosmology.angular_diameter_distance(self.z_lens)
     ang_diameter_source = self.cosmology.angular_diameter_distance(self.z_source)
     return (ang_diameter_source*np.sqrt(1.+ ang_diameter_lens**2/hubble_radius**2) \
             - ang_diameter_lens*np.sqrt(1.+ ang_diameter_source**2/hubble_radius**2))/(1.+z_source)
+    '''
+    pass
     
 
 

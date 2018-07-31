@@ -1,11 +1,11 @@
 '''General profile class that inherits from Models'''
-
-from models.models import Model
+import clmm
+from clmm.models import Model
 import scipy
 from scipy import integrate
+from clmm.models._profile_utils import *
 
 RELATIVE_ERROR = 1E-6
-from _profile_utils import sigma_crit
 import numpy as np
 
 
