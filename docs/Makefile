@@ -14,10 +14,10 @@ help:
 
 .PHONY: help Makefile
 
-generate-api: ./apidoc.sh
-		bash $<
+#generate-api: ./apidoc.sh
+#		bash $<
 .PHONY: html
-html: generate-api
+html: #generate-api
 	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(0)
 
 # Catch-all target: route all unknown targets to Sphinx using the new
