@@ -4,7 +4,7 @@ import numpy as np
 import scipy
 #import matplotlib.pyplot as plt
 #from clmm import Model, Parameter, Profile1D, profile
-from clmm import Model, Profile1D, profile
+from clmm import Model, radial_models
 
 def nfwprofile(r, params):
     rs, rho_0 = params
@@ -27,7 +27,7 @@ def nfwsigma_analytic(r, rs, rho_0):
 
 
 
-def test_profile():
+def test_radial_model_1d():
     r = np.linspace(.05, 3., 15)
 
     sample_profile = profile.Profile1D(z_lens=0.25, mass_definition='200c', 
@@ -39,5 +39,3 @@ def test_profile():
     print(sigma/sigma_analytic-1.)
     for i in range(len(sigma)):
         np.testing.assert_almost_equal(sigma[i]/sigma_analytic[i]-1.,0.,decimal=5)
-
-    
