@@ -6,7 +6,8 @@ from numpy.testing import assert_raises
 import six
 
 #import clmm
-from clmm import Model, Parameter
+#from clmm import Model, Parameter
+from clmm import Model
 #from clmm import models
 #from clmm.models import model
 #from clmm.models.model import Model

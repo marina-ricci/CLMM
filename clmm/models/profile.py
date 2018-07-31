@@ -4,7 +4,8 @@ from clmm.models import Model
 import scipy
 from scipy import integrate
 from clmm.models._profile_utils import *
-
+from colossus.halo.mass_so import *
+import colossus.cosmology.cosmology as Cosmology
 RELATIVE_ERROR = 1E-6
 import numpy as np
 
@@ -48,7 +49,39 @@ class Profile1D(Model) :
             self.cosmology = cosmology
         else :
             raise TypeError('cosmology should be a string')
+            
+    
+        
+        self.params = params
+        try:
+            assert type(self.params == dict)
+        except:
+            print(self.params)
+        self.M_mass_definition = params['M'] #[M] = M_dot
+        self.c = params['c']
+        self.zL = z_lens
+        self.mass_definition = mass_definition
+        self.chooseCosmology = cosmology
+        listCosmologies = ['planck15-only', 'planck15', 'planck13-only', \
+    'planck13', 'WMAP9-only', 'WMAP9-ML', 'WMAP9', 'WMAP7-only', 'WMAP7-ML', \
+    'WMAP7', 'WMAP5-only', 'WMAP5-ML', 'WMAP5', 'WMAP3-ML', 'WMAP3', \
+    'WMAP1-ML', 'WMAP1', 'bolshoi', 'millennium', 'powerlaw']        
+        if cosmology is None:
+            raise Exception('A name for the cosmology must be set.')
+        if cosmology not in listCosmologies:
+            msg = 'Cosmology must be one of ' + str(listCosmologies)    
+            raise Exception(msg)
+        if cosmology in listCosmologies:
+            self.cosmo = Cosmology.setCosmology(cosmology)
+        #input [M] = M_dot/h
+        self.r_mass_definition = M_to_R(self.M_mass_definition*self.cosmo.h, self.zL, self.mass_definition)/1E3/self.cosmo.h #Mpc from kpc/h
+        self.Delta = int(mass_definition[:-1])
+        
+        
+        #[rho_mass_definition] = M_dot/Mpc^3 from M_{\odot}h^2/kpc^3
+        self.rho_mass_definition = (densityThreshold(self.zL, self.mass_definition) * ((1E3)**3.) *(self.cosmo.h)**2.)/self.Delta
 
+        self.rs = self.r_mass_definition/self.c #Mpc
         
         # Need to implement r as the independent_var for all Profile1D models
         super().__init__(func, params=params)

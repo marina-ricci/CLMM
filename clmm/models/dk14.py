@@ -28,37 +28,6 @@ class dkProfile(Profile1D):
         Profile1D.__init__(self, zL, mdef, chooseCosmology)
         
         
-        self.M_mdef = parameters['M'].value #M200
-        
-        if cM_relation == True:
-            self.c = hc.concentration(self.M*self.cosmo.h, self.mdef, self.zL)
-            #self.c = 3.614*((1+self.zL)**(-0.424))*(self.M/self.cosmo.h/1E14)**(-0.105)
-        else:
-            self.c = parameters['c'].value
-        
-        if se is None:
-            self.se = 1.5
-        else:
-            self.se = se
-        if be is None:
-            self.be = 1.0
-        else:
-            self.be = be
-        
-        
-        self.zL = zL
-        self.mdef = mdef
-        if part is not None:
-            self.part = part
-        else:
-            self.part = 'both'
-        #[rs] = Mpc/h
-        self.r_mdef = Halo.mass_so.M_to_R(self.M_mdef*self.cosmo.h, self.zL, self.mdef)/1E3/self.cosmo.h #Mpc
-        self.rs = self.r_mdef/self.c #Mpc
-        self.Delta = int(mdef[:-1])
-        #[rho_mdef] = M_dot Mpc^3 from M_{\odot}h^2/kpc^3
-        self.rho_mdef = (Halo.mass_so.densityThreshold(self.zL, self.mdef) * 1E9 *(self.cosmo.h)**2.)/self.Delta
-        
         '''
         self.dk14Prof = HaloDensityProfile.DK14Profile(M = self.M_mdef, c = self.c, z = \
                                                        self.zL, mdef = self.mdef, \
@@ -70,11 +39,11 @@ class dkProfile(Profile1D):
                                      outer_term_names = ['pl'])
         #self.dk14Prof.par.se = self.se
         #self.dk14Prof.par.be = self.be
-        self.rmaxMult = 2.
+        #self.rmaxMult = 2.
         
         #self.dk14Prof.par.rs = self.rs*1E3 #[rs] = kpc/h from Mpc/h
         #self.dk14Prof.selected = 'by_accretion_rate' #beta = 6 gamma = 4; more accurate results
-        self.dk14Prof.selected = 'by_mass' 
+        #self.dk14Prof.selected = 'by_mass' 
         self.profile = 'dk'
         #super(dkProfile, self).__init__()
         

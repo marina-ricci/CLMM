@@ -3,7 +3,8 @@ from __future__ import absolute_import, print_function
 import numpy as np
 import scipy
 #import matplotlib.pyplot as plt
-from clmm import Model, Parameter, Profile1D
+#from clmm import Model, Parameter, Profile1D, profile
+from clmm import Model, Profile1D, profile
 
 def nfwprofile(r, params):
     rs, rho_0 = params
@@ -29,7 +30,9 @@ def nfwsigma_analytic(r, rs, rho_0):
 def test_profile():
     r = np.linspace(.05, 3., 15)
 
-    sample_profile = profile.Profile1D(z_lens=0.25, mass_definition='m200c', cosmology='WMAP7', func=nfwprofile, params=[.5, 1.E15])
+    sample_profile = profile.Profile1D(z_lens=0.25, mass_definition='200c', 
+                                       cosmology='WMAP7', func=nfwprofile, 
+                                       params={'M': 1E15, 'c': 4})
     sigma = sample_profile.surface_density(r)
     sigma_analytic = nfwsigma_analytic(r, rs=.5, rho_0=1.E15)
 

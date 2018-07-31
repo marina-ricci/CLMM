@@ -5,13 +5,9 @@ Created on Mon Jul 30 22:32:04 2018
 
 @author: MattFong
 """
-import colossus
 
-import colossus.cosmology.cosmology as Cosmology
-import colossus.halo.profile_dk14 as profile_dk14
-import colossus.halo as Halo
-import colossus.halo.concentration as hc
 from clmm.models import Profile1D
+
 
 
 import numpy as np
@@ -23,26 +19,10 @@ import numpy as np
 ############################################################################
 '''
 class nfwProfile(Profile1D):
-    ##### We're going to swap out ``profile'' with ``Profile1D''
     def __init__(self, parameters, zL, mdef, chooseCosmology, esp = None):
         super(nfwProfile, self).__init__(zL, mdef, chooseCosmology)
         #Profile1D.__init__(self, zL, mdef, chooseCosmology)
         
-        self.parameters = parameters
-        self.M_mdef = parameters['M'].value #[M] = M_dot
-        self.c = parameters['c'].value
-        self.zL = zL
-        self.mdef = mdef
-        self.chooseCosmology = chooseCosmology
-        #input [M] = M_dot/h
-        self.r_mdef = Halo.mass_so.M_to_R(self.M_mdef*self.cosmo.h, self.zL, self.mdef)/1E3/self.cosmo.h #Mpc from kpc/h
-        self.Delta = int(mdef[:-1])
-
-        #[rho_mdef] = M_dot/Mpc^3 from M_{\odot}h^2/kpc^3
-        self.rho_mdef = (Halo.mass_so.densityThreshold(self.zL, self.mdef) * ((1E3)**3.) *(self.cosmo.h)**2.)/self.Delta
-
-        self.rs = self.r_mdef/self.c #Mpc
-        self.profile = 'nfw'
         if esp == None:
             self.esp = 1E-5
         else:
