@@ -5,27 +5,22 @@ Created on Mon Jul 30 22:33:55 2018
 
 @author: MattFong
 """
-import colossus
-
-import colossus.cosmology.cosmology as Cosmology
+from clmm.models.radial_models.radial_model_1d import RadialModel1D
 import colossus.halo.profile_dk14 as profile_dk14
-import colossus.halo as Halo
-import colossus.halo.concentration as hc
-from clmm.models import Profile1D
 
 
-import numpy as np
+
 '''
 ############################################################################
                              Numerical dk14
 ############################################################################
 '''
 
-class dkProfile(Profile1D):
+class dkProfile(RadialModel1D):
     
-    def __init__(self, parameters, zL, mdef, chooseCosmology, part = None, \
+    def __init__(self, parameters, z_lens, mdef, chooseCosmology, part = None, \
                  se = None, be = None, cM_relation = None):
-        Profile1D.__init__(self, zL, mdef, chooseCosmology)
+        super().__init__(z_lens, func=self.density_3d, params=None, z_source=None)
         
         
         '''
