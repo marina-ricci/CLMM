@@ -63,13 +63,12 @@ class SigmaCrit() :
         """
         return constants.c.to('Mpc/s') * constants.c.to('Mpc/s') / \
             (4. * np.pi *  constants.G.to('Mpc3 / (Msun  s2)') * \
-             self.cosmology.angular_diameter_distance(self.z_lens) * self.beta_function(z_source) )
-
+             self.cosmology.angular_diameter_distance(self.z_lens) * self.beta_function(self.z_source) )
 
 
     def beta_function(self) :
         
-        return self.angular_diameter_distnce_two_objects(self.z_lens, self.z_source, cosmology) / self.cosmology.angular_diameter_distance( self.z_source )
+        return self.angular_diameter_distnce_two_objects(self.z_lens, self.z_source, self.cosmology) / self.cosmology.angular_diameter_distance( self.z_source )
 
     def beta_discrete_mean(self) :
         """
@@ -106,7 +105,7 @@ class SigmaCrit() :
 
         """
 
-        if np.iterable(z_source) and all(isinstance(z_s, float) for z_s in self.z_source) :
+        if np.iterable(self.z_source) and all(isinstance(z_s, float) for z_s in self.z_source) :
             return np.mean(self.beta_function(self.z_source*self.z_source))
 
         elif isinstance(self.z_source, float) :
@@ -115,37 +114,34 @@ class SigmaCrit() :
         else :
             raise TypeError("z_source must be float or array-like of floats ")
             
-
-
-
-def _angular_diameter_distance_two_objects(z_lens, z_source, cosmology) :
-    """
-    Angular diameter distance between two objects
-    Hogg+00 Eqn (19)
-    
-    Parameters
-    ----------
-    
-    z_lens : float
-        Lens redshift or redshifts
-    
-    z_source : float
-        Source redshift or redshifts
-    
-    cosmology : str
-        Label of cosmology
+    def _angular_diameter_distance_two_objects(self) :
+        """
+        Angular diameter distance between two objects
+        Hogg+00 Eqn (19)
         
-    """
-    
-    '''
-    #Need cosmology to be defined else the code breaks when using cosmo.H(0).to...
-    hubble_radius= constants.c.to('Mpc/s')/cosmo.H(0).to.('/s')                      
-    ang_diameter_lens = self.cosmology.angular_diameter_distance(self.z_lens)
-    ang_diameter_source = self.cosmology.angular_diameter_distance(self.z_source)
-    return (ang_diameter_source*np.sqrt(1.+ ang_diameter_lens**2/hubble_radius**2) \
-            - ang_diameter_lens*np.sqrt(1.+ ang_diameter_source**2/hubble_radius**2))/(1.+z_source)
-    '''
-    pass
+        Parameters
+        ----------
+        
+        z_lens : float
+            Lens redshift or redshifts
+        
+        z_source : float
+            Source redshift or redshifts
+        
+        cosmology : str
+            Label of cosmology
+            
+        """
+        
+        
+        #Need cosmology to be defined else the code breaks when using cosmo.H(0).to...
+        hubble_radius= constants.c.to('Mpc/s')/self.cosmo.H0.to('/s')                  
+        ang_diameter_lens = self.cosmology.angular_diameter_distance(self.z_lens)
+        ang_diameter_source = self.cosmology.angular_diameter_distance(self.z_source)
+        return (ang_diameter_source*np.sqrt(1.+ ang_diameter_lens**2/hubble_radius**2) \
+                - ang_diameter_lens*np.sqrt(1.+ ang_diameter_source**2/hubble_radius**2))/(1.+self.z_source)
+        
+        pass
     
 
 
@@ -158,6 +154,6 @@ def _get_cosmology( cosmology ) :
 
 
     """
-    print("getting cosmology %s, need to implement options from astropy"%self.cosmology)
+    print("getting cosmology %s, need to implement options from astropy"%cosmology)
 
-    return apycosmology.WMAPFlatLCDM(H0=70, Om0=0.3)
+    return apycosmo.FlatLambdaCDM(H0=70, Om0=0.3)
