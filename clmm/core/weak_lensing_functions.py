@@ -38,6 +38,7 @@ def beta_discrete_mean(d_a_lens, d_a_source, d_a_lens_source, weight) :
     Parameters
     ----------
     weight : shape weight
+        $w_{i} = sigma_{shape}^2$
 
     z_source : float or array-like of floats
         Source redshift or redshifts
@@ -66,6 +67,7 @@ def beta_square_discrete_mean(d_a_lens, d_a_source, d_a_lens_source, weight) :
     Parameters
     ----------
     weight : shape weight
+        $w_{i} = sigma_{shape}^2$
 
     z_source : float or array-like of floats
         Source redshift or redshifts
