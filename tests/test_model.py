@@ -4,7 +4,8 @@ from __future__ import absolute_import, print_function
 import numpy as np
 from numpy.testing import assert_raises
 import six
-from clmm import Model, Parameter
+#from clmm import Model, Parameter
+from clmm import Model
 
 
 def assert_block(test_model):
