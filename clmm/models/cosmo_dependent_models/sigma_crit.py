@@ -5,7 +5,7 @@ from astropy import constants
 import numpy as np
 
 
-class sigma_crit() :
+class SigmaCrit() :
     """
     This calculates a sigma crit for a given cosmology, mass definition, source and lens redshifts.
     
@@ -120,8 +120,21 @@ class sigma_crit() :
 
 def _angular_diameter_distance_two_objects(z_lens, z_source, cosmology) :
     """
+    Angular diameter distance between two objects
     Hogg+00 Eqn (19)
-
+    
+    Parameters
+    ----------
+    
+    z_lens : float
+        Lens redshift or redshifts
+    
+    z_source : float
+        Source redshift or redshifts
+    
+    cosmology : str
+        Label of cosmology
+        
     """
     
     '''
