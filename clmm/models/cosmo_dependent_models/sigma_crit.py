@@ -1,11 +1,12 @@
 '''profile utilities including sigma crit functionality and get cosmology function'''
 
+from clmm.models.model import Model
 import astropy.cosmology as apycosmo
 from astropy import constants
 import numpy as np
 
 
-class SigmaCrit() :
+class SigmaCrit(Model) :
     """
     This calculates a sigma crit for a given cosmology, mass definition, source and lens redshifts.
     
@@ -24,7 +25,7 @@ class SigmaCrit() :
     """
     
 
-    def __init__(self, z_lens, z_source, cosmology) :
+    def __init__(self, z_lens, z_source, cosmology, func=_getcosmology) :
 
         """ 
         Parameters
@@ -52,9 +53,12 @@ class SigmaCrit() :
 
         """ 
 
+
         self.z_lens = z_lens
         self.z_source = z_source
         self.cosmology = _get_cosmology( cosmology ) 
+
+        super().__init__(func)
 
     def calculate_sigma_crit(self) :
         """
