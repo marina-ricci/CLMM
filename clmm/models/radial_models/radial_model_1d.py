@@ -6,7 +6,8 @@ from scipy import integrate
 from clmm.core.weak_lensing_functions import sigma_crit
 RELATIVE_ERROR = 1E-6
 import numpy as np
-
+from clmm.models.cosmo_dependent_models.cosmology_model import angular_diameter_distance
+from clmm.models.cosmo_dependent_models.cosmology_model import angular_diameter_distance_two_objects
 
 class RadialModel1D(Model) :
     """
@@ -274,5 +275,8 @@ class RadialModel1D(Model) :
         # calculate da lens
         # calculate da source
         # calculate da lens source
+        d_a_lens = angular_diameter_distance(self.z_lens)
+        d_a_source = angular_diameter_distance(self.z_source)
+        d_a_lens_source = angular_diameter_distance_two_objects(self.z_lens, self.z_source, self.cosmology_str)
 
         return sigma_crit(d_a_lens, d_a_source, d_a_lens_source)
