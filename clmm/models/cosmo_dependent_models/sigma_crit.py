@@ -141,7 +141,6 @@ class SigmaCrit() :
         return (ang_diameter_source*np.sqrt(1.+ ang_diameter_lens**2/hubble_radius**2) \
                 - ang_diameter_lens*np.sqrt(1.+ ang_diameter_source**2/hubble_radius**2))/(1.+self.z_source)
         
-        pass
     
 
 
