@@ -4,4 +4,4 @@ we're not currently fitting for cosmology,
 but we want to leave flexibility for treating cosmology as a model
 """
 
-from .sigma_crit import *
+from .cosmology_model import *
