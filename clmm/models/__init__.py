@@ -7,5 +7,4 @@ from .model import *
 from .parameter import *
 from .radial_models import *
 from .nfw import *
-from ._profile_utils import *
-#from .dk14 import *
+from .cosmo_dependent_models import *

@@ -6,7 +6,7 @@ Created on Mon Jul 30 22:32:04 2018
 @author: MattFong
 """
 
-from clmm.models import Profile1D
+from clmm.models.radial_models.radial_model_1d import RadialModel1D
 
 
 
@@ -18,7 +18,7 @@ import numpy as np
                                   NFW
 ############################################################################
 '''
-class nfwProfile(Profile1D):
+class nfwProfile(RadialModel1D):
     def __init__(self, parameters, zL, mdef, chooseCosmology, esp = None):
         super(nfwProfile, self).__init__(zL, mdef, chooseCosmology)
         #Profile1D.__init__(self, zL, mdef, chooseCosmology)

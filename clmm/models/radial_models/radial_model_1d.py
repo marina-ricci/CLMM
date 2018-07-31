@@ -3,9 +3,7 @@ import clmm
 from clmm.models import Model
 import scipy
 from scipy import integrate
-from clmm.models._profile_utils import *
-from colossus.halo.mass_so import *
-import colossus.cosmology.cosmology as Cosmology
+from clmm.models.cosmo_dependent_models.sigma_crit import SigmaCrit
 RELATIVE_ERROR = 1E-6
 import numpy as np
 
