@@ -1,4 +1,3 @@
-python:                                                                                             
-    pip_install: true                                                                               
-    extra_requirements:                                                                             
-        - numpydoc 
+#python:
+#    pip_install: true
+#    extra_requirements: ['numpydoc']
