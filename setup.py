@@ -19,5 +19,5 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python"
         ],
-      install_requires=["astropy", "matplotlib", "numpy", "scipy"]
+      install_requires=["astropy", "matplotlib", "numpy", "scipy","colossus"]
 )

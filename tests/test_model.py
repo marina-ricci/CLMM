@@ -43,6 +43,7 @@ def assert_block(test_model):
 def test_model_superclass():
     """Test the Model superclass. """
 
+
     assert_raises(TypeError, Model, lambda x: x, [1])
     assert_raises(TypeError, Model, lambda x: x, 'r')
     assert_raises(TypeError, Model, 'x*x', ['r'])

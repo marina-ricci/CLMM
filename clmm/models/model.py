@@ -58,3 +58,4 @@ class Model():
             self.params = params
         else:
             raise TypeError('params should be a list of type Parameter')
+
