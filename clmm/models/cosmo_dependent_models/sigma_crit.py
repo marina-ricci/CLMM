@@ -5,7 +5,7 @@ from astropy import constants
 import numpy as np
 
 
-class sigma_crit() :
+class SigmaCrit() :
     """
     This calculates a sigma crit for a given cosmology, mass definition, source and lens redshifts.
     

@@ -9,7 +9,7 @@ RELATIVE_ERROR = 1E-6
 import numpy as np
 
 
-class Profile1D(Model) :
+class RadialModel1D(Model) :
     """
     Generalized superclass for 1D model profiles. It inherits from Models.
 
