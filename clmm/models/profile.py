@@ -1,16 +1,13 @@
 '''General profile class that inherits from Models'''
-
-from models.models import Model
+import clmm
+from clmm.models import Model
 import scipy
 from scipy import integrate
-from _profile_utils import sigma_crit
+from clmm.models._profile_utils import *
+
+RELATIVE_ERROR = 1E-6
 import numpy as np
 
-import colossus.cosmology.cosmology as Cosmology
-from colossus.utils import constants
-import colossus.halo.profile_dk14 as profile_dk14
-import colossus.halo as Halo
-import colossus.halo.concentration as hc
 
 class Profile1D(Model) :
     """
@@ -55,39 +52,7 @@ class Profile1D(Model) :
         
         # Need to implement r as the independent_var for all Profile1D models
         super().__init__(func, params=params)
-        
-    '''
-    ############################################################################
-                            Constants for Profiles
-    ############################################################################
-    '''
-    def calcConstants(self):
-        chooseCosmology = self.chooseCosmology
-        zL = self.zL
-        listCosmologies = ['planck15-only', 'planck15', 'planck13-only', \
-    'planck13', 'WMAP9-only', 'WMAP9-ML', 'WMAP9', 'WMAP7-only', 'WMAP7-ML', \
-    'WMAP7', 'WMAP5-only', 'WMAP5-ML', 'WMAP5', 'WMAP3-ML', 'WMAP3', \
-    'WMAP1-ML', 'WMAP1', 'bolshoi', 'millennium', 'powerlaw']        
-        if chooseCosmology is None:
-            raise Exception('A name for the cosmology must be set.')
-        if chooseCosmology not in listCosmologies:
-            msg = 'Cosmology must be one of ' + str(listCosmologies)    
-            raise Exception(msg)
-        if chooseCosmology in listCosmologies:
-            cosmo = Cosmology.setCosmology(chooseCosmology)
-        # Gravitational constant [G] = Mpc * m^2 / M_{\odot}/s^2 from kpc * km^2 / M_{\odot} / s^2
-        #G = Cosmology.AST_G * 1E3
-        G = constants.G * 1E3
-        
-        # Hubble parameter H(z)^2 [H0] = m/s/Mpc #from km/s/Mpc
-        #[H2] = (m/s/Mpc)^2
-        H2 = (cosmo.Hz(zL)**2.)*1E6
-        # speed of light v_c [v_c] = m/s from [AST_c] = cm/s 
-        #v_c = Cosmology.AST_c / 1E2
-        v_c = constants.C/1E2
-        
-        return G, v_c, H2, cosmo
-    
+            
     
     def density_3d(self,r):
         """
@@ -107,7 +72,7 @@ class Profile1D(Model) :
             It has the same dimensions as r. 
 
         """
-        pass
+        return self.func(r, self.params)
     
     def surface_density(self, r):
         """
@@ -135,7 +100,7 @@ class Profile1D(Model) :
         r_use = r.tolist()
         surface_density = (0.0 * r).tolist()
         for i in range(len(r_use)): 
-            ReturnResult = integrate.quad(integrand, r_use[i] + 0.0000001, self.rmax, args = r_use[i], epsrel = 1E-6, limit = 100000)   
+            ReturnResult = integrate.quad(integrand, r_use[i] + 0.0000001, 1000, args = r_use[i], epsrel = RELATIVE_ERROR, limit = 100000)   
             surface_density[i] = ReturnResult[0]
         surface_density = np.array(surface_density)
 
@@ -245,8 +210,10 @@ class Profile1D(Model) :
             :math:'\bar{\kappa}', the mean convergence enclosed by r, which is unitless. It has the same dimensions as r.
         
         """
+
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
         mean_sigma = self.mean_surface_density(r)
-        mean_kappa = mean_sigma/sigmaC
+        mean_kappa = mean_sigma/sigma_crit
         return mean_kappa
     
     def shear(self, r, z_source):
@@ -266,8 +233,10 @@ class Profile1D(Model) :
             :math:'\gamma_t', the tangential shear, which is unitless. It has the same dimensions as r.
         
         """
+
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
         delta_sigma = self.delta_sigma(r)
-        gamma = delta_sigma/sigmaC
+        gamma = delta_sigma/sigma_crit
         return gamma
     
     def reduced_shear(self, r, z_source):
@@ -289,6 +258,7 @@ class Profile1D(Model) :
         """
         mean_sigma, sigma = self.mean_surface_density(r, return_sigma=True)
 
-        redg = (mean_sigma-sigma)/(sigmaC-sigma)
+        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
+        redg = (mean_sigma-sigma)/(sigma_crit-sigma)
         return redg    
     

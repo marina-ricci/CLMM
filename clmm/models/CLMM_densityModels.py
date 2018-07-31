@@ -10,7 +10,7 @@ import colossus.cosmology.cosmology as Cosmology
 import colossus.halo.profile_dk14 as profile_dk14
 import colossus.halo as Halo
 import colossus.halo.concentration as hc
-import profile
+from clmm.models import Profile1D
 
 
 import numpy as np
@@ -24,7 +24,7 @@ import numpy as np
 class nfwProfile(Profile1D):
     ##### We're going to swap out ``profile'' with ``Profile1D''
     def __init__(self, parameters, zL, mdef, chooseCosmology, esp = None):
-        profile.__init__(self, zL, mdef, chooseCosmology)
+        Profile1D.__init__(self, zL, mdef, chooseCosmology)
         
         self.parameters = parameters
         self.M_mdef = parameters['M'].value #[M] = M_dot
@@ -144,10 +144,10 @@ class nfwProfile(Profile1D):
                                Truncated NFW
 ############################################################################
 '''
-class nfwBMOProfile(profile):
+class nfwBMOProfile(Profile1D):
     
     def __init__(self, parameters, zL, n, mdef, chooseCosmology, Tau = None, cM_relation = None, esp = None):
-        profile.__init__(self, zL, mdef, chooseCosmology)
+        Profile1D.__init__(self, zL, mdef, chooseCosmology)
         
         cosmo = Cosmology.setCosmology(chooseCosmology)
         self.parameters = parameters
@@ -289,7 +289,7 @@ class dkProfile(Profile1D):
     
     def __init__(self, parameters, zL, mdef, chooseCosmology, part = None, \
                  se = None, be = None, cM_relation = None):
-        profile.__init__(self, zL, mdef, chooseCosmology)
+        Profile1D.__init__(self, zL, mdef, chooseCosmology)
         
         
         self.M_mdef = parameters['M'].value #M200
@@ -352,7 +352,22 @@ class dkProfile(Profile1D):
         rho = rho * (self.cosmo.h**2.)
         return rho 
     
-    def dkSigma(self,r):
+    def surface_density(self,r):
+        """
+        DK14 projected surface density profile, :math:'\Sigma'. It is a function of radius. See Diemer & Kravtsov (2014)
+
+        Parameters
+        -----------------------------------------------
+        r: ndarray
+            The radius in units of Mpc.
+
+        Returns
+        -----------------------------------------------
+        sigma: ndarray
+            :math:'\Sigma', the surface density in units of :math:'\mathrm{M}_{\odot}/\mathrm{Mpc}^2'. 
+            It has the same dimensions as r.
+        
+        """
         #input [R] = Mpc
         #[R] = kpc/h from Mpc for Diemer input
         R = r*1E3*self.cosmo.h
@@ -363,29 +378,3 @@ class dkProfile(Profile1D):
         SigmaDiemer = SigmaDiemer * self.cosmo.h
         return SigmaDiemer #[Sigma] = M_dot/Mpc^2
     
-    def dkDeltaSigma(self,r):
-        #input [r] = Mpc
-        '''
-        #[R] = kpc/h from Mpc/h for Diemer input
-        r = R*1E3
-        self.dk14Prof.rmax = r[-1]*self.rmaxMult
-        #[surfaceDensity] = M_dot h/Mpc^2 from M_{\odot} h/kpc^2
-        SigmaDiemer = self.dk14Prof.surfaceDensity(r) * 1E6
-        #[Sigma] = M_dot / Mpc^2 from `M_{\odot} h/Mpc^2`
-        SigmaDiemer = SigmaDiemer * self.cosmo.h
-        '''
-        
-        ########## Doesn't work!!!!!
-        #[r] = kpc/h from Mpc (Diemer input)
-        R = r*1E3*self.cosmo.h
-        #self.dk14Prof.rmax = R[-1]*self.rmaxMult
-        dSig = self.dk14Prof.deltaSigma(R)
-        #output :math:`M_{\odot} h/{\\rm kpc}^2`
-        ########## up to here
-        
-        
-        return dSig * self.cosmo.h #[Sigma] = M_dot/Mpc^2 from M_dot h^2 / Mpc^2
-    
-    
-
-

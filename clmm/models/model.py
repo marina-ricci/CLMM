@@ -1,7 +1,10 @@
 """Model class"""
 import numpy as np
 import six
-from models.parameter import Parameter
+#from parameter import Parameter
+import clmm
+
+
 
 class Model():
     """A generalized superclass of what a model is. A model has parameters
@@ -50,8 +53,9 @@ class Model():
             raise TypeError('independent_vars should be a list of str or None')
 
 
-        if (np.iterable(params) and all(isinstance(param, Parameter) for param in params)) \
+        if (np.iterable(params) and all(isinstance(param, clmm.Parameter) for param in params)) \
            or (params is None):
             self.params = params
         else:
             raise TypeError('params should be a list of type Parameter')
+
