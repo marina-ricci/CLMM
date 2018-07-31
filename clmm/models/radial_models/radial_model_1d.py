@@ -3,7 +3,7 @@ import clmm
 from clmm.models import Model
 import scipy
 from scipy import integrate
-from clmm.models.cosmo_dependent_models.sigma_crit import SigmaCrit
+from clmm.core.weak_lensing_functions import sigma_crit
 RELATIVE_ERROR = 1E-6
 import numpy as np
 
@@ -28,9 +28,12 @@ class RadialModel1D(Model) :
 
     params: list
         List of Parameter objects (default to None)
+
+    z_source : float or iterable of floats (default to None)
+        List of source redshifts or single source redshift
     
     """
-    def __init__(self, z_lens, mass_definition, cosmology, func, params=None) :
+    def __init__(self, z_lens, mass_definition, cosmology, func, params=None, z_source=None) :
         
         if isinstance(z_lens, float) :
             self.z_lens = z_lens
@@ -48,8 +51,14 @@ class RadialModel1D(Model) :
         else :
             raise TypeError('cosmology should be a string')
             
-    
-        
+
+        if isinstance(z_source, float) or \
+           (np.iterable(z_source) and all(isinstance(z_s,float) for z_s in z_source) ) or\
+           (z_source is None):
+            self.z_source = z_source
+        else :
+            raise TypeError('z_source should be a float or list of floats')
+
         self.params = params
         try:
             assert type(self.params == dict)
@@ -83,8 +92,10 @@ class RadialModel1D(Model) :
         
         # Need to implement r as the independent_var for all Profile1D models
         super().__init__(func, params=params)
-            
-    
+
+        if z_source is not None :
+            self.sigma_crit = self.calculate_sigma_crit_with_cosmology()
+                
     def density_3d(self,r):
         """
         3D volume density profile, :math:'\rho'. It is a function of radius.
@@ -201,7 +212,7 @@ class RadialModel1D(Model) :
         delta_sigma = sigma_mean - sigma
         return delta_sigma
     
-    def convergence(self, r, z_source):
+    def convergence(self, r):
         """
         Convergence, or dimensionless surface mass density, :math:'\kappa=\Sigma/\Sigma_{crit}'. It is a function of radius.
 
@@ -209,8 +220,6 @@ class RadialModel1D(Model) :
         ----------
         r: ndarray
             The radius in units of Mpc.
-        z_source: float
-            Mean effective redshift of the background galaxies.
 
         Returns
         -------
@@ -219,12 +228,11 @@ class RadialModel1D(Model) :
         
         """
 
-        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
         sigma = self.surface_density(r)
-        kappa = sigma/sigma_crit
+        kappa = sigma/self.sigma_crit
         return kappa
     
-    def mean_convergence(self, r, z_source):
+    def mean_convergence(self, r):
         """
         Mean enclosed convergence, :math:'\bar{\kappa}=\bar{\Sigma}/\Sigma_{crit}'. It is a function of radius.
 
@@ -242,12 +250,11 @@ class RadialModel1D(Model) :
         
         """
 
-        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
         mean_sigma = self.mean_surface_density(r)
-        mean_kappa = mean_sigma/sigma_crit
+        mean_kappa = mean_sigma/self.sigma_crit
         return mean_kappa
     
-    def shear(self, r, z_source):
+    def shear(self, r):
         """
         Tangential shear, :math:'\gamma_{t}=\Delta\Sigma / \Sigma_{crit}'. It is a function of radius.
 
@@ -265,12 +272,11 @@ class RadialModel1D(Model) :
         
         """
 
-        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
         delta_sigma = self.delta_sigma(r)
-        gamma = delta_sigma/sigma_crit
+        gamma = delta_sigma/self.sigma_crit
         return gamma
     
-    def reduced_shear(self, r, z_source):
+    def reduced_shear(self, r):
         """
         Tangential reduced shear, :math:'g_t'. It is a function of radius.
 
@@ -287,9 +293,18 @@ class RadialModel1D(Model) :
             :math:'g_t', the tangential reduced shear, which is unitless. It has the same dimensions as r.
         
         """
+        # Make sure that self.sigma_crit is an attribute that is
+        # filled in (otherwise, we didn't specify z_sources in the
+        # constructor
         mean_sigma, sigma = self.mean_surface_density(r, return_sigma=True)
 
-        sigma_crit = sigma_crit(self.z_lens, z_source, self.cosmology).calculate_sigma_crit()
-        redg = (mean_sigma-sigma)/(sigma_crit-sigma)
+        redg = (mean_sigma-sigma)/(self.sigma_crit-sigma)
         return redg    
     
+
+    def calculate_sigma_crit_with_cosmomlogy(self) :
+        # calculate da lens
+        # calculate da source
+        # calculate da lens source
+
+        return sigma_crit(d_a_lens, d_a_source, d_a_lens_source)

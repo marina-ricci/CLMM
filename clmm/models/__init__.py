@@ -6,5 +6,4 @@
 from .model import *
 from .parameter import *
 from .radial_models import *
-from .nfw import *
 from .cosmo_dependent_models import *
