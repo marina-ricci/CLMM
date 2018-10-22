@@ -48,8 +48,8 @@ def angular_diameter_distance_two_objects(z_lens, z_source, cosmology_str) :
     hubble_radius= constants.c.to('Mpc/s')/cosmology.H0.to('/s')                  
     ang_diameter_lens = cosmology.angular_diameter_distance(z_lens)
     ang_diameter_source = cosmology.angular_diameter_distance(z_source)
-    return (ang_diameter_source*np.sqrt(1.+ Omega_k*ang_diameter_lens**2/hubble_radius**2) \
-            - ((1. + z_lens)/(1.+z_source))*ang_diameter_lens*np.sqrt(1.+ Omega_k*ang_diameter_source**2/hubble_radius**2))/(1.+z_source)
+    return ((1.+z_source)*ang_diameter_source*np.sqrt(1.+ Omega_k*ang_diameter_lens**2/hubble_radius**2) \
+            - (1. + z_lens)*ang_diameter_lens*np.sqrt(1.+ Omega_k*ang_diameter_source**2/hubble_radius**2))/(1.+z_source)
 
 
 
