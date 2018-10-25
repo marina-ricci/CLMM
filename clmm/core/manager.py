@@ -73,7 +73,7 @@ class Manager():
                 data = cluster.find_data(creator, specs, exact=True)
                 if len(data)==0:
                     raise ValueError('requested data not found in GalaxyCluster')
-                prepared_data[cluster.name]['%s_data'%creator] = data[0]
+                prepared_data[cluster.name]['%s_data'%creator] = data[0]['values']
 
         return prepared_data
                 
