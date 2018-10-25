@@ -50,6 +50,21 @@ class Manager():
         Prepare data from GalaxyCluster objects to be used in inference methods.  
         Inference methods are generally agnostic to what GalaxyCluster looks like.
         ## Note: Leave as pass below until we decide on inferrer contents ##
+
+        Parameters
+        ----------
+        cluster_list: list
+            List of GalaxyCluster objects
+        creator_list: list
+            List of creators of the input data to be used in inference
+        specs_list: list
+            List of specss of the input data to be used in inference
+
+        Returns
+        -------
+        prepared_data: dict
+            Dictionay to be used as input in inference, the keys are cluster names
+            and values are dictionaries in the format expected by inferrer
         '''
         prepared_data = {}
         for cluster in cluster_list:
@@ -66,6 +81,13 @@ class Manager():
     def deliver(self, cluster_list, inferrer):
         '''
         Put results from inference into GalaxyCluster objects
+
+        Parameters
+        ----------
+        cluster_list: list
+            List of GalaxyCluster objects
+        inferrer: Inferrer object
+            Inferrer object with chain results to the exported
         '''
         if len(inferrer.out_data)==0:
             raise LookupError('no info to export (run inferrer.run_is_chains first)')
