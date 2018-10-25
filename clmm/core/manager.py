@@ -76,7 +76,6 @@ class Manager():
                 prepared_data[cluster.name]['%s_data'%creator] = data[0]['values']
 
         return prepared_data
-                
 
     def deliver(self, cluster_list, inferrer):
         '''
@@ -141,6 +140,7 @@ class Manager():
         '''
         incoming_creator = func.__name__ # may want to simplify it
         return incoming_creator
+
     def _signspecs(self, func_specs):
         '''
         Creates the specs name for GCData based on a ran function
