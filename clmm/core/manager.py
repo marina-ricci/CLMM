@@ -45,19 +45,34 @@ class Manager():
         # Below kind of delivers, self.deliver may not be necessary, depending on how we choose to define inference.
         cluster.add_data(packed_data)
         
-    def prepare(self):
+    def prepare(self, cluster_list, creator_list, specs_list):
         '''
         Prepare data from GalaxyCluster objects to be used in inference methods.  
         Inference methods are generally agnostic to what GalaxyCluster looks like.
         ## Note: Leave as pass below until we decide on inferrer contents ##
         '''
-        pass
+        prepared_data = {}
+        for cluster in cluster_list:
+            prepared_data[cluster.name] = {}
+            for creator, specs in zip(creator_list, specs_list):
+                data = cluster.find_data(creator, specs, exact=True)
+                if len(data)==0:
+                    raise ValueError('requested data not found in GalaxyCluster')
+                prepared_data[cluster.name]['%s_data'%creator] = data[0]
 
-    def deliver(self):
+        return prepared_data
+                
+
+    def deliver(self, cluster_list, inferrer):
         '''
         Put results from inference into GalaxyCluster objects
         '''
-        pass
+        if len(inferrer.out_data)==0:
+            raise LookupError('no info to export (run inferrer.run_is_chains first)')
+        for cluster in cluster_list:
+            for data in inferrer.out_data[cluster.name]:
+                gcdata = GCData(data['name'], data['specs'], data['data'])
+                cluster.add_data(gcdata)
 
     def _ask(self):
         '''
