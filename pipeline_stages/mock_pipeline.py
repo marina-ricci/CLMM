@@ -107,3 +107,7 @@ if __name__=='__main__':
     mp = MockPipe()
 
     mp.stage1()
+    mp.stage2()
+    mp.stage3()
+    mp.stage4()
+    mp.stage5()
