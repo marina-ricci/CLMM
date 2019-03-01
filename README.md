@@ -27,5 +27,17 @@ A new and improved cluster mass modeling code descended from [clmassmod](https:/
 * Add your name here!
 
 
-##GETTING STARTED
+## GETTING STARTED
+cd desc
 git clone https://github.com/LSSTDESC/CLMM.git
+
+
+cd ~/desc/CLMM
+git checkout master
+git pull --ff-only
+
+
+
+
+
+
