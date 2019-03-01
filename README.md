@@ -25,3 +25,7 @@ A new and improved cluster mass modeling code descended from [clmassmod](https:/
 * [Doug Applegate](https://github.com/deapplegate)
 * [Matthew Ho](https://github.com/maho3) (CMU)
 * Add your name here!
+
+
+##GETTING STARTED
+git clone https://github.com/LSSTDESC/CLMM.git
